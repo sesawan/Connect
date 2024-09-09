@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with <%= friendName %></title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/socket.io/socket.io.js"></script>
+    <script defer src="/js/chat.js"></script>
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.25rem;
+        }
+
+        header a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.875rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        header a:hover {
+            background-color: #555;
+        }
+
+        /* Sidebar Styles */
+        #sidebar {
+            width: 240px;
+            background-color: #fff;
+            border-right: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 60px;
+            bottom: 0;
+            left: 0;
+            z-index: 999;
+            overflow-y: auto;
+        }
+
+        #sidebar h2 {
+            padding: 12px;
+            margin: 0;
+            background-color: #f1f1f1;
+            border-bottom: 1px solid #ddd;
+            font-size: 1rem;
+            font-weight: normal;
+            color: #333;
+        }
+
+        #friends-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #friends-list li {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+            display: flex;
+            align-items: center;
+            font-size: 0.875rem;
+        }
+
+        #friends-list li:hover {
+            background-color: #e0e0e0;
+        }
+
+        #friends-list li.active {
+            background-color: #333;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .friend-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .friend-photo {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+        }
+
+        .last-message {
+            font-size: 0.75rem;
+            color: gray;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Main Chat Area */
+        main {
+            margin-left: 240px;
+            margin-top: 60px;
+            padding: 16px;
+            background-color: #fff;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 60px);
+            overflow: hidden;
+        }
+
+        /* Message List */
+        #messages {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        #messages li {
+            padding: 12px;
+            border-radius: 20px;
+            max-width: 75%;
+            word-break: break-word;
+            font-size: 0.875rem;
+        }
+
+        #messages li.you {
+            background-color: #333;
+            color: #fff;
+            align-self: flex-end;
+            text-align: right;
+            border-radius: 20px 20px 0 20px;
+        }
+
+        #messages li.friend {
+            background-color: #e0e0e0;
+            color: #333;
+            align-self: flex-start;
+            text-align: left;
+            border-radius: 20px 20px 20px 0;
+        }
+
+        /* Typing Status */
+        #typing-status {
+            font-style: italic;
+            color: #888;
+            margin-bottom: 12px;
+            padding-left: 12px;
+            font-size: 0.75rem;
+        }
+
+        /* Form Styles */
+        form {
+            display: flex;
+            padding: 12px;
+            background-color: #fff;
+            border-top: 1px solid #ddd;
+        }
+
+        #message-input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            margin-right: 12px;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        #message-input:focus {
+            outline: none;
+            border-color: #333;
+        }
+
+        button {
+            padding: 12px 20px;
+            background-color: #333;
+            border: none;
+            color: #fff;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+
+        button:hover {
+            background-color: #555;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            #sidebar {
+                display: none;
+            }
+
+            main {
+                margin-left: 0;
+                margin-top: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Chat with <%= friendName %></h1>
+        <a href="/dashboard">Dashboard</a>
+    </header>
+    
+    <div id="sidebar">
+        <h2>Friends List</h2>
+        <ul id="friends-list">
+            <% friends.forEach(friend => { %>
+                <li data-id="<%= friend.id %>" class="<%= friend.id === friendId ? 'active' : '' %>">
+                    <div class="friend-info">
+                        <img src="<%= friend.profile_photo %>" alt="<%= friend.name %>" class="friend-photo">
+                        <span><%= friend.name %></span>
+                    </div>
+                    <span class="last-message"><%= friend.last_message_content || 'No messages yet' %></span>
+                </li>
+            <% }); %>
+        </ul>
+    </div>
+
+    <main>
+        <ul id="messages">
+            <% messages.forEach(message => { %>
+                <li class="<%= message.sender_id === userId ? 'you' : 'friend' %>">
+                    <strong><%= message.sender_id === userId ? 'You' : friendName %>:</strong> <%= message.content %>
+                </li>
+            <% }); %>
+        </ul>
+        
+        <div id="typing-status"></div>
+        
+        <form id="message-form" aria-label="Message Form">
+            <input type="text" id="message-input" aria-label="Message input" placeholder="Type a message..." autocomplete="off">
+            <button type="submit">Send</button>
+        </form>
+    </main>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const socket = io();
+            const userId = <%= userId %>;
+            const friendId = <%= friendId %>;
+            const friendName = '<%= friendName %>';
+
+            socket.emit('joinRoom', { userId, friendId });
+
+            const messageForm = document.getElementById('message-form');
+            const messageInput = document.getElementById('message-input');
+            const messages = document.getElementById('messages');
+            const typingStatus = document.getElementById('typing-status');
+            const friendsList = document.getElementById('friends-list');
+
+            function scrollToBottom() {
+                messages.scrollTop = messages.scrollHeight;
+            }
+
+            function updateActiveFriend() {
+                document.querySelectorAll('#friends-list li').forEach(item => {
+                    item.classList.toggle('active', item.getAttribute('data-id') === friendId);
+                });
+            }
+
+            updateActiveFriend();
+            scrollToBottom();
+
+            messageForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const content = messageInput.value.trim();
+                if (content) {
+                    socket.emit('sendMessage', { senderId: userId, receiverId: friendId, content });
+                    messageInput.value = '';
+                    messageInput.focus();
+                }
+            });
+
+            socket.on('receiveMessage', (data) => {
+                const messageElement = document.createElement('li');
+                messageElement.className = data.senderId === userId ? 'you' : 'friend';
+                messageElement.innerHTML = `<strong>${data.senderId === userId ? 'You' : friendName}:</strong> ${data.content}`;
+                messages.appendChild(messageElement);
+                scrollToBottom();
+            });
+
+            socket.on('typing', (data) => {
+                typingStatus.textContent = data.isTyping ? `${friendName} is typing...` : '';
+            });
+
+            friendsList.addEventListener('click', (e) => {
+                const friendItem = e.target.closest('li');
+                if (friendItem) {
+                    const id = friendItem.getAttribute('data-id');
+                    if (id !== friendId) {
+                        window.location.href = `/chat/${id}`;
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

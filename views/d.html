@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>chatApp</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/styles/dashboard.css">
+</head>
+<body>
+    <div class="navbar">
+    <div class="brand">Algolizen</div>
+    <div class="nav-links">
+        <a href="/">Home</a>
+        <li class="nav-item">
+            <a class="nav-link" href="/profile/<%= userId %>">My Profile</a>
+        </li>
+    </div>
+    <div class="search-container">
+        <form id="search-form" action="/search" method="get">
+            <input type="text" name="query" placeholder="Search..." required>
+            <i class="fas fa-search" onclick="document.getElementById('search-form').submit();"></i>
+        </form>
+    </div>
+    <div class="icons">
+        <!-- Chat Icon -->
+        <button id="chat-icon" class="chat-icon">
+            <i class="fas fa-comments"></i>
+        </button>
+	
+	<a href="/videos" id="friends-icon" class="chat-icon">
+            <i class="fa-solid fa-film"></i>
+        </a>
+        
+        <!-- Friends Icon -->
+        <a href="/friends" id="friends-icon" class="chat-icon">
+            <i class="fas fa-user-friends"></i>
+        </a>
+
+        <!-- Friends List Container (initially hidden) -->
+        <div id="friend-list-container" class="friend-list-container" style="display: none;">
+            <h3>Select a Friend to Chat</h3>
+            <ul id="friend-list">
+                <% friends.forEach(friend => { %>
+                    <li class="friend-item" data-friend-id="<%= friend.id %>">
+                        <%= friend.name %>
+                    </li>
+                <% }); %>
+            </ul>
+        </div>
+
+        <button id="notifications-button">
+            <i class="fas fa-bell"></i>
+            <span id="notifications-badge">0</span>
+        </button>
+        <div id="notifications-dropdown" class="dropdown-content">
+            <!-- Notifications will be dynamically loaded here -->
+        </div>
+        
+        <div class="user-profile">
+            <img src="<%= profilePhoto || 'default-profile.png' %>" alt="User Profile" id="user-profile-img" data-user-id="<%= userId %>">
+            <div class="user-dropdown">
+                <a href="#" id="profile-link">Profile</a>
+                <a href="#" id="profile-link">Settings</a>
+                <a href="#" id="logout-link">Logout</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<main class="container mt-5 pt-5">
+    <section id="create-post" class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <form id="post-form" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <div class="profile-photo-container">
+                                    <img src="<%= profilePhoto || '/images/default-profile.png' %>" alt="Profile Photo" class="profile-photo">
+                                </div>
+                                <textarea name="content" class="form-control" rows="4" placeholder="What's on your mind?" required></textarea>
+                            </div>
+                            <div class="media-upload-container">
+                                <input type="file" name="media" class="form-control-file" accept="image/*,video/*" id="media-input">
+                                <label for="media-input" class="media-upload-icon">
+                                    <i class="fa fa-file-image"></i> <span>or</span> <i class="fa fa-file-video"></i>
+                                </label>
+                                <div id="loading-spinner"></div>
+                            </div>
+                            <div id="progress-container">
+                                <div id="progress-bar"></div>
+                            </div>
+                            <div class="media-preview-container">
+                                <img id="image-preview" src="#" alt="Image Preview" class="media-preview d-none">
+                                <video id="video-preview" controls class="media-preview d-none">
+                                    <source src="#" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                            <button type="submit" class="btn btn-primary mt-4">Post</button>
+                        </form>
+                        <div id="success-message" class="alert alert-success mt-3" style="display: none;">
+                            Your post has been successfully uploaded!
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+
+
+<section id="friend-suggestions" class="container mb-4">
+  <% if (suggestions.length > 0) { %>
+    <h2 class="mb-4" style="text-align: center;">Friend Suggestions</h2>
+    <div class="suggestions-container">
+      <% suggestions.forEach(suggestion => { %>
+        <div class="suggestion-card">
+          <a href="/profile/<%= suggestion.id %>">
+            <img src="<%= suggestion.profile_photo || '/images/default-profile.png' %>" class="profile-img" alt="<%= suggestion.name %>">
+          </a>
+          <div class="suggestion-info">
+            <h5 class="suggestion-name"><%= suggestion.name %></h5>
+            <p class="suggestion-email"><%= suggestion.email %></p>
+            <p class="suggestion-mutual-friends">
+              <%= suggestion.mutual_friends %> mutual friend<%= suggestion.mutual_friends !== 1 ? 's' : '' %>
+            </p>
+            <form action="/send-friend-request" method="post">
+              <input type="hidden" name="receiverId" value="<%= suggestion.id %>">
+              <button type="submit" class="btn btn-primary">Send Friend Request</button>
+            </form>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <p class="text-muted">No suggestions available.</p>
+  <% } %>
+</section>
+<h1>Create Reel</h1>
+    <form id="reelForm" enctype="multipart/form-data">
+        <div>
+            <label for="video">Upload Video:</label>
+            <input type="file" id="video" name="video" accept="video/*" required>
+        </div>
+        <div>
+            <label for="caption">Caption:</label>
+            <textarea id="caption" name="caption" rows="4" placeholder="Write a caption..."></textarea>
+        </div>
+        <button type="submit">Submit</button>
+    </form>
+ 
+<div id="reelsSection">
+        <div class="reels-container">
+            <% reels.forEach(reel => { %>
+                <div class="reel">
+                    <video class="reel-video" controls>
+                        <source src="/uploads/reels/<%= reel.video %>" type="video/<%= reel.video.split('.').pop() %>">
+                        Your browser does not support the video tag.
+                    </video>
+                    <div class="reel-caption">
+                        <p><strong><%= reel.author %></strong>: <%= reel.caption %></p>
+                        <p><em>Posted on: <%= new Date(reel.timestamp).toLocaleString() %></em></p>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+    </div>
+
+
+<!-- Chat Head Avatar -->
+<div id="chat-head-avatar" class="chat-head-avatar">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7XneMGjOdupGjZFesW1XmNgwrjAnFJXLi2qMMRr6oFsNEhC6IOPhVPgUGJjyq88HU9tI&usqp=CAU" alt="Chat Avatar" />
+</div>
+
+<!-- Chat Container -->
+<div id="chat-container" class="chat-container">
+    <div class="chat-header">
+        <h3>AI Girlfriend Chat</h3>
+        <button id="close-chat" class="close-chat">×</button>
+    </div>
+    <div id="chat-messages" class="chat-messages">
+    </div>
+    <!-- Typing indicator -->
+        <div id="typing-indicator" class="typing-indicator" style="display: none;">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    <div class="chat-input-container">
+        <input id="chat-input" type="text" placeholder="Type a message..." />
+        <button id="send-chat" class="send-chat">Send</button>
+    </div>
+</div>
+
+<!-- Post Display -->
+<section id="posts" class="mb-4">
+  <% if (posts.length > 0) { %>
+    <% posts.forEach(post => { %>
+      <div class="card mb-3">
+        <div class="card-body">
+          <div class="post-header d-flex align-items-center mb-3">
+            <a href="/profile/<%= post.authorId %>">
+              <img src="<%= post.author_photo || '/images/default-profile.png' %>" alt="<%= post.author %> profile photo" class="profile-photo-sm mr-3">
+            </a>
+            <h5 class="card-title mb-0"><%= post.author %></h5>
+          </div>
+          <p class="card-text <%= post.content.length < 100 ? 'short-content' : 'long-content' %>">
+            <%= post.content %>
+            <small class="timestamp"><%= post.timestamp %></small>
+          </p>
+
+          <% if (post.image) { %>
+            <img src="/uploads/<%= post.image %>" alt="Post Image" class="post-image">
+          <% } %>
+
+          <% if (post.video) { %>
+            <video controls class="post-video">
+              <source src="/uploads/<%= post.video %>" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          <% } %>
+
+         <!-- Like Button -->
+         <button class="btn btn-link like-button" data-post-id="<%= post.id %>">
+            <i class="fas fa-thumbs-up like-icon"></i>
+            <span class="like-count"><%= post.like_count %></span> Like
+         </button>
+
+          <!-- View Comments Button -->
+          <button class="btn btn-link view-comments-btn" onclick="toggleComments(this)">View Comments</button>
+
+          <!-- Display Comments (Initially Hidden) -->
+          <div class="comments" style="display: none;">
+            <% postComments.filter(comment => comment.post_id === post.id).forEach(comment => { %>
+              <div class="comment mb-2">
+                <strong><%= comment.author %>:</strong> <%= comment.content %>
+                <small class="text-muted"><%= comment.timestamp %></small>
+              </div>
+            <% }) %>
+          </div>
+
+          <!-- Add a Comment -->
+          <form action="/create-comment" method="post" class="comment-form">
+            <input type="hidden" name="post_id" value="<%= post.id %>">
+            <div class="form-group">
+              <input type="text" name="content" class="form-control" placeholder="Add a comment..." required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">Comment</button>
+          </form>
+        </div>
+      </div>
+    <% }) %>
+  <% } else { %>
+    <p>No posts available. Start by creating a new post!</p>
+  <% } %>
+</section>
+
+  </main>
+    <!-- Load jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/scripts/dashboard.js"></script>
+</body>
+</html>

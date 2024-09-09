@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>chatApp</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+/* Base styles */
+body {
+    font-family: 'Arial', sans-serif;
+    color: #333;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+/* Navbar styles */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background-color: #007bff;
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 1000;
+}
+
+.navbar .brand {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.navbar .nav-links {
+    display: flex;
+    gap: 25px;
+}
+
+.navbar .nav-links a {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+    transition: color 0.3s;
+}
+
+.navbar .nav-links a:hover {
+    color: #ffdd57;
+}
+
+.navbar .search-container {
+    position: relative;
+    flex-grow: 1;
+    max-width: 400px;
+    margin: 0 20px;
+}
+
+.navbar .search-container input {
+    width: 100%;
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: none;
+    font-size: 16px;
+}
+
+.navbar .search-container .fa-search {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+    cursor: pointer;
+}
+
+/* Chat Icon */
+.chat-icon {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 20px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.chat-icon:hover {
+  background-color: #0056b3;
+  transform: scale(1.1);
+}
+
+/* Friend List Container */
+.friend-list-container {
+  position: absolute;
+  top: 60px;
+  right: 0;
+  width: 320px;
+  max-height: 400px;
+  background-color: #ffffff;
+  border: 1px solid #ccc; /* Light gray border for better definition */
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  display: none;
+  z-index: 1000;
+  overflow-y: auto;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+/* Header Styling */
+.friend-list-container h3 {
+  font-size: 18px;
+  color: #007bff; /* Consistent with chat icon color */
+  margin-bottom: 15px;
+  text-align: center;
+  font-weight: bold;
+  border-bottom: 2px solid #e0e0e0; /* Subtle border for separation */
+  padding-bottom: 10px;
+}
+
+/* Friend Items List */
+.friend-list-container ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.friend-item {
+  padding: 12px;
+  margin-bottom: 10px;
+  background-color: #f0f2f5; /* Slightly darker background for contrast */
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.friend-item:hover {
+  background-color: #e1e4e8; /* Slightly darker on hover for better visibility */
+  transform: scale(1.02);
+}
+
+.friend-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Display control */
+.friend-list-container.show {
+  display: block;
+  opacity: 1;
+  visibility: visible;
+}
+/* Chat Icon */
+.chat-icon {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 20px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.chat-icon:hover {
+  background-color: #0056b3;
+  transform: scale(1.1);
+}
+
+/* Friend List Container */
+.friend-list-container {
+  position: absolute;
+  top: 60px;
+  right: 0;
+  width: 320px;
+  max-height: 400px;
+  background-color: #ffffff;
+  border: 1px solid #ccc; /* Light gray border for better definition */
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  display: none;
+  z-index: 1000;
+  overflow-y: auto;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+/* Header Styling */
+.friend-list-container h3 {
+  font-size: 18px;
+  color: #007bff; /* Consistent with chat icon color */
+  margin-bottom: 15px;
+  text-align: center;
+  font-weight: bold;
+  border-bottom: 2px solid #e0e0e0; /* Subtle border for separation */
+  padding-bottom: 10px;
+}
+
+/* Friend Items List */
+.friend-list-container ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.friend-item {
+  padding: 12px;
+  margin-bottom: 10px;
+  background-color: #f0f2f5; /* Slightly darker background for contrast */
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: #000; /* Black text color for better visibility */
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.friend-item:hover {
+  background-color: #e1e4e8; /* Slightly darker on hover for better visibility */
+  transform: scale(1.02);
+}
+
+.friend-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Display control */
+.friend-list-container.show {
+  display: block;
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Notification styles */
+.navbar .icons {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+/* Notifications Button */
+#notifications-button {
+    background-color: transparent; /* Transparent background */
+    color: white; /* White text color */
+    border: none; /* No border */
+    font-size: 24px; /* Larger font size */
+    position: relative; /* Position relative for badge positioning */
+    outline: none; /* Remove outline */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: color 0.3s, transform 0.3s; /* Smooth transition */
+}
+
+#notifications-button:hover {
+    color: #ffdd57; /* Yellow color on hover */
+    transform: scale(1.1); /* Slightly enlarge on hover */
+}
+
+/* Notifications Badge */
+#notifications-badge {
+    position: absolute; /* Position badge relative to button */
+    top: -8px; /* Position above button */
+    right: -8px; /* Position to the right of button */
+    background-color: #dc3545; /* Red background */
+    color: white; /* White text color */
+    border-radius: 50%; /* Circular badge */
+    padding: 5px 10px; /* Padding inside badge */
+    font-size: 12px; /* Smaller font size */
+    font-weight: bold; /* Bold text */
+    min-width: 20px; /* Minimum width for the badge */
+    text-align: center; /* Center text inside badge */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Shadow for depth */
+}
+
+/* Notification Dropdown Styles */
+#notifications-dropdown {
+    display: none; /* Hidden by default */
+    position: absolute; /* Positioned relative to parent */
+    background-color: #fff; /* White background */
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+    z-index: 1000; /* Ensure it sits above other content */
+    width: 350px; /* Fixed width */
+    border-radius: 10px; /* Rounded corners */
+    top: 60px; /* Position below the button */
+    right: 0; /* Align to the right */
+    opacity: 0; /* Hidden initially */
+    transform: scaleY(0); /* Hidden initially */
+    transform-origin: top; /* Transform from top */
+    transition: opacity 0.3s, transform 0.3s; /* Smooth transition */
+    overflow-y: auto; /* Scrollable content */
+    max-height: 500px; /* Max height for scrolling */
+    padding: 0; /* No padding */
+}
+
+#notifications-dropdown.show {
+    display: block; /* Show dropdown */
+    opacity: 1; /* Fully opaque */
+    transform: scaleY(1); /* Scale up */
+}
+
+/* Notification Card Styles */
+.notification-card {
+    display: flex; /* Flexbox layout */
+    align-items: flex-start; /* Align items at the start */
+    padding: 15px; /* Padding inside card */
+    border-bottom: 1px solid #ddd; /* Bottom border */
+    transition: background-color 0.3s, box-shadow 0.3s; /* Smooth transition */
+    cursor: pointer; /* Pointer cursor */
+    gap: 15px; /* Space between items */
+    background-color: #ffffff; /* White background */
+    border-radius: 8px; /* Rounded corners */
+}
+
+.notification-card:last-child {
+    border-bottom: none; /* Remove bottom border for last item */
+}
+
+.notification-card:hover {
+    background-color: #f9f9f9; /* Light gray background on hover */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Shadow on hover */
+}
+
+/* Notification Icon */
+.notification-icon {
+    font-size: 24px; /* Large icon size */
+    color: #007bff; /* Blue color */
+    transition: color 0.3s; /* Smooth transition */
+}
+
+.notification-icon:hover {
+    color: #0056b3; /* Darker blue on hover */
+}
+
+/* Notification Content */
+.notification-content {
+    flex: 1; /* Take up remaining space */
+}
+
+.notification-header {
+    font-weight: bold; /* Bold text */
+    margin-bottom: 4px; /* Space below header */
+    font-size: 16px; /* Slightly larger font size */
+    color: #333; /* Dark text color */
+}
+
+.notification-body {
+    font-size: 14px; /* Regular font size */
+    color: #666; /* Light gray text color */
+    margin-bottom: 8px; /* Space below body */
+}
+
+/* User Profile Image */
+#user-profile-img {
+    width: 50px; /* Fixed width */
+    height: 50px; /* Fixed height */
+    border-radius: 50%; /* Circular image */
+    object-fit: cover; /* Cover image area without distortion */
+    margin-right: 10px; /* Space between image and text */
+}
+
+/* No Notifications Message */
+.no-notifications {
+    padding: 15px; /* Padding around text */
+    text-align: center; /* Center text */
+    color: #666; /* Light gray text color */
+    font-size: 16px; /* Regular font size */
+    font-style: italic; /* Italic text */
+}
+
+/* Notification Action Buttons */
+.notification-actions {
+    display: flex; /* Flexbox layout */
+    gap: 12px; /* Space between buttons */
+    margin-top: 10px; /* Space above actions */
+}
+
+.action-button {
+    background-color: #007bff; /* Blue background */
+    color: white; /* White text color */
+    border: none; /* No border */
+    padding: 8px 18px; /* Padding inside button */
+    border-radius: 6px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor */
+    font-size: 14px; /* Regular font size */
+    font-weight: bold; /* Bold text */
+    transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s; /* Smooth transition */
+}
+
+.action-button.accept-button {
+    background-color: #28a745; /* Green background for accept */
+}
+
+.action-button.decline-button {
+    background-color: #dc3545; /* Red background for decline */
+}
+
+.action-button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+    transform: translateY(-2px); /* Lift button slightly */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow on hover */
+}
+
+.action-button.accept-button:hover {
+    background-color: #218838; /* Darker green for accept */
+}
+
+.action-button.decline-button:hover {
+    background-color: #c82333; /* Darker red for decline */
+}
+
+/* User Profile Dropdown */
+.user-profile {
+    position: relative; /* Position relative for dropdown */
+    display: inline-block; /* Inline block for alignment */
+}
+
+/* User Profile Image */
+.user-profile-img {
+    width: 40px; /* Fixed width */
+    height: 40px; /* Fixed height */
+    border-radius: 50%; /* Circular image */
+    object-fit: cover; /* Cover image area without distortion */
+    margin-right: 10px; /* Space between image and text */
+}
+
+/* User Dropdown Menu */
+.user-dropdown {
+    display: none; /* Hidden by default */
+    position: absolute; /* Positioned relative to parent */
+    background-color: white; /* White background */
+    min-width: 150px; /* Minimum width for dropdown */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+    z-index: 1; /* Ensure it sits above other content */
+    right: 0; /* Align to the right */
+    border-radius: 5px; /* Rounded corners */
+    overflow: hidden; /* Hide overflow */
+    transform-origin: top; /* Transform from top */
+    transform: scaleY(0); /* Hidden initially */
+    opacity: 0; /* Hidden initially */
+    transition: transform 0.3s, opacity 0.3s; /* Smooth transition */
+}
+
+.user-dropdown.show {
+    display: block; /* Show dropdown */
+    transform: scaleY(1); /* Scale up */
+    opacity: 1; /* Fully opaque */
+}
+
+.user-dropdown a {
+    color: black; /* Black text color */
+    padding: 12px 16px; /* Padding inside dropdown items */
+    text-decoration: none; /* Remove underline */
+    display: block; /* Block display for full width */
+    font-size: 14px; /* Regular font size */
+}
+
+.user-dropdown a:hover {
+    background-color: #ddd; /* Light gray background on hover */
+}
+
+
+/* Post Creation Form */
+#post-form {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    margin: 20px auto;
+}
+
+.profile-photo-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.profile-photo {
+    width: 50px; /* Adjust size as needed */
+    height: 50px; /* Adjust size as needed */
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 10px; /* Space between photo and textarea */
+}
+
+#post-form .form-group {
+    margin-bottom: 15px;
+}
+
+#post-form textarea {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #cccccc;
+    font-size: 16px;
+    resize: vertical;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    color: #333;
+    transition: border-color 0.3s ease;
+}
+
+#post-form textarea:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+#post-form button {
+    background-color: #007bff;
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+#post-form button:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+}
+
+/* Post Display */
+/* General Card Styles */
+.card {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    max-width: 600px;
+    margin: 20px auto;
+    overflow: hidden;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+/* Post Header Styles */
+.post-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.profile-photo-sm {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 15px;
+    border: 2px solid #e0e0e0;
+}
+
+.card-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #333;
+    margin: 0;
+    line-height: 1.3;
+}
+
+/* Post Content Styles */
+.card-text {
+    font-size: 1rem; /* Default size */
+    color: #444;
+    line-height: 1.6;
+    margin-bottom: 15px;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #f5f5f5;
+    overflow-wrap: break-word;
+}
+
+/* Adjust text size based on content length */
+.card-text.short-content {
+    font-size: 1.2rem; /* Larger text for shorter content */
+}
+
+.card-text.long-content {
+    font-size: 1rem; /* Smaller text for longer content */
+}
+
+.card-text small {
+    color: #777;
+}
+
+.card-text .timestamp {
+    display: block;
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+/* Style for post images */
+img.post-image {
+  display: block;
+  margin: 10px auto; /* Centers the image horizontally */
+  max-width: 100%; /* Ensure the image doesn't exceed the width of its container */
+  max-height: 400px; /* Limit the height of the image */
+  width: auto; /* Let the width adjust automatically */
+  height: auto; /* Let the height adjust automatically */
+  border-radius: 8px; /* Rounded corners */
+  object-fit: cover; /* Cover the entire container while preserving aspect ratio */
+}
+
+/* Style for the timestamp */
+.timestamp {
+  display: block;
+  font-size: 0.9em;
+  color: #888;
+}
+
+/* Comment Section Styles */
+.comments {
+    margin-top: 20px;
+    display: none; /* Initially hidden */
+}
+
+/* Style for individual comments */
+.comment {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    background-color: #fafafa;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.comment:last-of-type {
+    border-bottom: none;
+}
+
+.comment strong {
+    color: #333;
+    font-weight: 600;
+}
+
+/* Updated Comment Form Style with Button on Right */
+.comment-form {
+    display: flex; /* Aligns the input and button horizontally */
+    margin-top: 20px;
+    padding-top: 10px;
+    border-top: 1px solid #ddd;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.comment-form .form-control {
+    flex: 1; /* Takes up the remaining space */
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-right: 10px; /* Adds space between input and button */
+}
+
+.comment-form .btn {
+    background-color: #007bff;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    align-self: center; /* Vertically aligns the button */
+}
+
+.comment-form .btn:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+}
+
+/* View/Hide Comments Button */
+.btn-link.view-comments-btn {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    border: none;
+    background: none;
+    font-size: 14px;
+}
+
+.btn-link.view-comments-btn:hover {
+    text-decoration: underline;
+} 
+
+
+/* Friend Suggestions Container */
+.suggestions-container {
+    display: flex; /* Align items horizontally */
+    overflow-x: auto; /* Enable horizontal scrolling */
+    padding: 10px; /* Add padding around the container */
+    margin: 0 auto; /* Center the container horizontally */
+    max-width: 600px; 
+    box-sizing: border-box; /* Include padding and border in element's total width and height */
+    white-space: nowrap; /* Prevent wrapping of child elements */
+}
+
+/* Style for each suggestion card */
+.suggestion-card {
+    display: inline-flex; /* Display cards in a row */
+    flex-direction: column; /* Arrange card contents vertically */
+    align-items: center; /* Center content horizontally */
+    background-color: #ffffff; /* White background for cards */
+    border: 1px solid #e0e0e0; /* Light grey border */
+    border-radius: 12px; /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    padding: 15px; /* Padding inside each card */
+    min-width: 200px; /* Minimum width of each card */
+    margin-right: 15px; /* Space between cards */
+    text-align: center; /* Center text inside the card */
+    box-sizing: border-box; /* Include padding and border in width */
+}
+
+/* Style for profile image */
+.profile-img {
+    width: 100px; /* Fixed width for profile image */
+    height: 100px; /* Fixed height for profile image */
+    object-fit: cover; /* Cover the area of the image without distortion */
+    border-radius: 50%; /* Round profile image */
+    margin-bottom: 10px; /* Space below the image */
+}
+
+/* Style for suggestion info section */
+.suggestion-info {
+    text-align: center; /* Center text inside the info section */
+}
+
+/* Style for suggestion name */
+.suggestion-name {
+    font-size: 1.1em; /* Slightly larger font size for names */
+    margin-bottom: 5px; /* Space below name */
+}
+
+/* Style for suggestion email */
+.suggestion-email {
+    font-size: 0.9em; /* Slightly smaller font size for email */
+    color: #666; /* Grey color for email */
+    margin-bottom: 10px; /* Space below email */
+}
+
+/* Style for buttons */
+.btn-primary {
+    background-color: #007bff; /* Blue background color for buttons */
+    color: #fff; /* White text color */
+    border: none; /* Remove default border */
+    border-radius: 5px; /* Rounded corners */
+    padding: 10px 15px; /* Padding inside button */
+    cursor: pointer; /* Pointer cursor on hover */
+    font-size: 0.9em; /* Adjust font size for buttons */
+}
+
+.btn-primary:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+/* Mobile-friendly styles */
+@media only screen and (max-width: 600px) {
+
+    /* Friend Suggestions Container */
+    .suggestions-container {
+        max-width: 100%; /* Full width on mobile */
+        padding: 5px; /* Reduce padding for smaller screens */
+        overflow-x: scroll; /* Enable horizontal scrolling */
+    }
+
+    /* Style for each suggestion card */
+    .suggestion-card {
+        min-width: 120px; /* Smaller minimum width for cards */
+        margin-right: 10px; /* Space between cards */
+        padding: 8px; /* Reduced padding inside cards */
+        flex: 0 0 auto; /* Prevent cards from shrinking */
+    }
+
+    /* Style for profile image */
+    .profile-img {
+        width: 60px; /* Smaller profile image */
+        height: 60px; /* Match width and height */
+        margin-bottom: 6px; /* Adjust margin below image */
+    }
+
+    /* Style for suggestion name */
+    .suggestion-name {
+        font-size: 0.9em; /* Slightly smaller font size */
+        margin-bottom: 4px; /* Adjust space below name */
+    }
+
+    /* Style for suggestion email */
+    .suggestion-email {
+        font-size: 0.8em; /* Smaller font size */
+        color: #666; /* Grey color for email */
+        margin-bottom: 6px; /* Adjust space below email */
+    }
+
+    /* Style for buttons */
+    .btn-primary {
+        font-size: 0.8em; /* Smaller font size */
+        padding: 6px 10px; /* Adjust padding for buttons */
+    }
+}
+
+
+/* Footer Styles */
+.footer {
+    background-color: #007bff;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    font-size: 14px;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+    box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.footer a {
+    color: #ffdd57;
+    text-decoration: none;
+}
+
+.footer a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .navbar .brand,
+    .navbar .nav-links {
+        display: none;
+    }
+
+    .navbar .search-container {
+        display: block; /* Ensure the search bar is still visible */
+    }
+}
+/* Mobile Friend List Container */
+@media only screen and (max-width: 600px) {
+    .friend-list-container {
+        width: 100%; /* Full width on mobile */
+        max-height: 300px; /* Adjust max height for mobile */
+        top: 50px; /* Adjust position for mobile */
+    }
+
+    .friend-item {
+        padding: 10px; /* Reduced padding for mobile */
+        font-size: 14px; /* Smaller font size */
+    }
+}
+//* Mobile Styles */
+@media (max-width: 768px) {
+    .navbar .icons {
+        flex-direction: column; /* Stack icons vertically */
+        align-items: flex-start; /* Align to the start of the container */
+        margin-top: 10px; /* Add some space on top */
+    }
+
+    .navbar .chat-icon,
+    .navbar #notifications-button,
+    .navbar .user-profile {
+        margin-bottom: 10px; /* Space between icons */
+    }
+
+    /* Ensure the friends list is responsive */
+    .friend-list-container {
+        position: absolute;
+        top: 60px; /* Adjust as needed */
+        right: 10px; /* Adjust as needed */
+        background-color: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        width: 200px; /* Adjust width as needed */
+        z-index: 1000;
+    }
+
+    .friend-list-container h3 {
+        margin: 0;
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .friend-list-container ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .friend-list-container .friend-item {
+        padding: 10px;
+        cursor: pointer;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .friend-list-container .friend-item:hover {
+        background-color: #f9f9f9;
+    }
+}
+}
+/* Mobile Notification Dropdown */
+@media only screen and (max-width: 600px) {
+    #notifications-dropdown {
+        width: 100%; /* Full width on mobile */
+        max-height: 300px; /* Adjust max height for mobile */
+    }
+
+    .notification-card {
+        padding: 10px; /* Reduced padding for mobile */
+        font-size: 14px; /* Smaller font size */
+    }
+
+    .notification-actions {
+        flex-direction: column; /* Stack action buttons vertically */
+        gap: 8px; /* Reduced gap */
+    }
+
+    .action-button {
+        font-size: 12px; /* Smaller font size */
+        padding: 6px 12px; /* Adjust padding */
+    }
+}
+
+
+
+
+
+
+
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 15px;
+    }
+
+    .navbar .nav-links {
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .navbar .search-container {
+        width: 100%;
+        margin: 10px 0;
+    }
+
+    .navbar .search-container input {
+        width: calc(100% - 40px);
+    }
+
+    #notifications-dropdown {
+        width: 100%;
+        max-height: 300px;
+    }
+
+    #post-form {
+        padding: 15px;
+    }
+
+    #post-form textarea {
+        font-size: 14px;
+    }
+
+    #post-form button {
+        font-size: 14px;
+    }
+
+    .card {
+        margin: 10px;
+    }
+
+    .card-title {
+        font-size: 18px;
+    }
+
+    .card-text {
+        font-size: 14px;
+    }
+
+    form[action="/create-comment"] input {
+        font-size: 12px;
+    }
+
+    form[action="/create-comment"] button {
+        font-size: 12px;
+        padding: 8px 14px;
+    }
+}
+ 
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="brand">MySite</div>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/about">About</a>
+            <a href="/services">Services</a>
+            <a href="/contact">Contact</a>
+            <li class="nav-item">
+                <a class="nav-link" href="/profile/<%= userId %>">My Profile</a>
+            </li>
+        </div>
+        <div class="search-container">
+            <form id="search-form" action="/search" method="get">
+                <input type="text" name="query" placeholder="Search..." required>
+                <i class="fas fa-search" onclick="document.getElementById('search-form').submit();"></i>
+            </form>
+        </div>
+        <div class="icons">
+        <!-- Chat Icon -->
+	  <button id="chat-icon" class="chat-icon">
+	    <i class="fas fa-comments"></i>
+	  </button>
+
+	  <!-- Friends List Container (initially hidden) -->
+	  <div id="friend-list-container" class="friend-list-container" style="display: none;">
+	    <h3>Select a Friend to Chat</h3>
+	    <ul id="friend-list">
+	      <% friends.forEach(friend => { %>
+		<li class="friend-item" data-friend-id="<%= friend.id %>">
+		  <%= friend.name %>
+		</li>
+	      <% }); %>
+	    </ul>
+	  </div>
+
+            <button id="notifications-button">
+                <i class="fas fa-bell"></i>
+                <span id="notifications-badge">0</span>
+            </button>
+            <div id="notifications-dropdown" class="dropdown-content">
+                <!-- Notifications will be dynamically loaded here -->
+                
+            </div>
+            
+            <div class="user-profile">
+                <img src="<%= profilePhoto || 'default-profile.png' %>" alt="User Profile" id="user-profile-img" data-user-id="<%= userId %>">
+                <div class="user-dropdown">
+                    <a href="#" id="profile-link">Profile</a>
+                    <a href="#" id="profile-link">Settings</a>
+                    <a href="#" id="logout-link">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+       
+    <main class="container mt-5 pt-5">
+ <!-- Create a Post -->
+<section id="create-post" class="mb-4">
+  <form id="post-form" enctype="multipart/form-data">
+    <div class="form-group">
+      <h2>Welcome, <%= username %>!</h2>
+      <h2>Create a Post and see what's going on with your friends.</h2>
+      <div class="profile-photo-container">
+        <img src="<%= profilePhoto || '/images/default-profile.png' %>" alt="Profile Photo" class="profile-photo">
+      </div>
+      <textarea name="content" class="form-control" rows="3" placeholder="What's on your mind?" required></textarea>
+      <input type="file" name="image" class="form-control mt-2">
+    </div>
+    <button type="submit" class="btn btn-primary mt-2">Post</button>
+  </form>
+</section>
+
+<!-- Include this script for AJAX functionality -->
+<script>
+  document.getElementById('post-form').addEventListener('submit', function(e) {
+    e.preventDefault(); // Prevent the form from submitting the traditional way
+
+    const formData = new FormData(this);
+
+    fetch('/create-post', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Clear the form fields after submission
+        this.reset();
+
+        // Create the new post element dynamically
+        const newPost = document.createElement('div');
+        newPost.className = 'card mb-3';
+        newPost.innerHTML = `
+          <div class="card-body">
+            <div class="post-header d-flex align-items-center mb-3">
+              <a href="/profile/${data.post.authorId}">
+                <img src="<%= profilePhoto || '/images/default-profile.png' %>" alt="Profile Photo" class="profile-photo-sm mr-3">
+              </a>
+              <h5 class="card-title mb-0">You</h5>
+            </div>
+            <p class="card-text">${data.post.content}</p>
+            ${data.post.image ? `<img src="/uploads/${data.post.image}" alt="Post Image" class="post-image">` : ''}
+            <small class="timestamp">just now</small>
+          </div>
+        `;
+
+        // Prepend the new post to the posts container
+        document.getElementById('posts').prepend(newPost);
+      } else {
+        alert(data.message); // Handle errors by showing an alert
+      }
+    })
+    .catch(error => console.error('Error:', error));
+  });
+</script>
+
+
+
+  
+   <section id="friend-suggestions" class="container mb-4">
+  <% if (suggestions.length > 0) { %>
+    <h2 class="mb-4" style="text-align: center;">Friend Suggestions</h2>
+    <div class="suggestions-container">
+      <% suggestions.forEach(suggestion => { %>
+        <div class="suggestion-card">
+          <a href="/profile/<%= suggestion.id %>">
+            <img src="<%= suggestion.profile_photo || '/images/default-profile.png' %>" class="profile-img" alt="<%= suggestion.name %>">
+          </a>
+          <div class="suggestion-info">
+            <h5 class="suggestion-name"><%= suggestion.name %></h5>
+            <p class="suggestion-email"><%= suggestion.email %></p>
+            <p class="suggestion-mutual-friends">
+              <%= suggestion.mutual_friends %> mutual friend<%= suggestion.mutual_friends !== 1 ? 's' : '' %>
+            </p>
+            <form action="/send-friend-request" method="post">
+              <input type="hidden" name="receiverId" value="<%= suggestion.id %>">
+              <button type="submit" class="btn btn-primary">Send Friend Request</button>
+            </form>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <p class="text-muted">No suggestions available.</p>
+  <% } %>
+</section>
+
+
+
+<!-- Post Display -->
+<section id="posts" class="mb-4">
+  <% if (posts.length > 0) { %>
+    <% posts.forEach(post => { %>
+      <div class="card mb-3">
+        <div class="card-body">
+          <div class="post-header d-flex align-items-center mb-3">
+            <a href="/profile/<%= post.authorId %>">
+              <img src="<%= post.author_photo || '/images/default-profile.png' %>" alt="<%= post.author %> profile photo" class="profile-photo-sm mr-3">
+            </a>
+            <h5 class="card-title mb-0"><%= post.author %></h5>
+          </div>
+          <p class="card-text <%= post.content.length < 100 ? 'short-content' : 'long-content' %>">
+            <%= post.content %>
+            <small class="timestamp"><%= post.timestamp %></small>
+          </p>
+
+          <% if (post.image) { %>
+            <img src="/uploads/<%= post.image %>" alt="Post Image" class="post-image">
+          <% } %>
+
+          <!-- View Comments Button -->
+          <button class="btn btn-link view-comments-btn" onclick="toggleComments(this)">View Comments</button>
+
+          <!-- Display Comments (Initially Hidden) -->
+          <div class="comments" style="display: none;">
+            <% postComments.filter(comment => comment.post_id === post.id).forEach(comment => { %>
+              <div class="comment mb-2">
+                <strong><%= comment.author %>:</strong> <%= comment.content %>
+                <small class="text-muted"><%= comment.timestamp %></small>
+              </div>
+            <% }) %>
+          </div>
+
+          <!-- Add a Comment -->
+          <form action="/create-comment" method="post" class="comment-form">
+            <input type="hidden" name="post_id" value="<%= post.id %>">
+            <div class="form-group">
+              <input type="text" name="content" class="form-control" placeholder="Add a comment..." required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">Comment</button>
+          </form>
+        </div>
+      </div>
+    <% }) %>
+  <% } else { %>
+    <p>No posts available. Start by creating a new post!</p>
+  <% } %>
+</section> 
+  </main>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            const userId = $('#user-profile-img').data('user-id');
+
+            $('.user-profile img').click(function () {
+                $('.user-dropdown').toggleClass('show');
+            });
+
+            $('#logout-link').click(function (e) {
+                e.preventDefault();
+                $.get('/logout', function () {
+                    window.location.href = '/';
+                }).fail(function () {
+                    alert('Failed to log out');
+                });
+            });
+
+            $('#profile-link').click(function (e) {
+                e.preventDefault();
+                window.location.href = `/profile/${userId}`;
+            });
+
+            function fetchNotifications() {
+	    $.ajax({
+		url: '/notifications',
+		method: 'GET',
+		success: function (data) {
+		    $('#notifications-dropdown').empty();
+		    $('#notifications-badge').text(data.friendRequests.length);
+
+		    if (data.friendRequests.length === 0) {
+		        $('#notifications-dropdown').append('<div class="no-notifications">No notifications</div>');
+		    } else {
+		        data.friendRequests.forEach(function (request) {
+		            $('#notifications-dropdown').append(`
+		                <div class="notification-card">
+		                    <a href="/profile/${request.sender_id}" class="notification-link">
+		                        <img src="${request.sender_photo || '/images/default-profile.png'}" alt="${request.sender_name}'s photo" class="user-profile-img">
+		                    </a>
+		                    <div class="notification-content">
+		                        <div class="notification-header">${request.sender_name} sent you a friend request</div>
+		                        <div class="notification-actions">
+		                            <button class="action-button accept-button" data-id="${request.id}">Accept</button>
+		                            <button class="action-button decline-button" data-id="${request.id}">Decline</button>
+		                        </div>
+		                    </div>
+		                </div>
+		            `);
+		        });
+		    }
+		},
+		error: function () {
+		    alert('Failed to load notifications');
+		}
+	    });
+	}
+
+
+
+            $('#notifications-button').click(function () {
+                $('#notifications-dropdown').toggleClass('show');
+            });
+
+            $(document).on('click', '.accept-button', function () {
+	    const requestId = $(this).data('id');
+	    $.post(`/accept-friend-request`, { requestId: requestId })
+		.done(function () {
+		    alert('Friend request accepted');
+		    fetchNotifications();
+		})
+		.fail(function (xhr) {
+		    alert('Failed to accept friend request: ' + xhr.responseText);
+		});
+	});
+
+	$(document).on('click', '.decline-button', function () {
+	    const requestId = $(this).data('id');
+	    $.post(`/decline-friend-request`, { requestId: requestId })
+		.done(function () {
+		    alert('Friend request declined');
+		    fetchNotifications();
+		})
+		.fail(function (xhr) {
+		    alert('Failed to decline friend request: ' + xhr.responseText);
+		});
+	});
+
+
+            $(document).click(function (e) {
+                if (!$(e.target).closest('.user-profile, .user-dropdown, #notifications-button').length) {
+                    $('.user-dropdown').removeClass('show');
+                    $('#notifications-dropdown').removeClass('show');
+                }
+            });
+
+            // Initialize notifications
+            fetchNotifications();
+        });
+    </script>
+    <!-- JavaScript to handle friend list display and chat selection -->
+  <script>
+    document.getElementById('chat-icon').addEventListener('click', function() {
+      const friendListContainer = document.getElementById('friend-list-container');
+      friendListContainer.style.display = friendListContainer.style.display === 'none' ? 'block' : 'none';
+    });
+
+    document.querySelectorAll('.friend-item').forEach(item => {
+      item.addEventListener('click', function() {
+        const friendId = this.dataset.friendId;
+        window.location.href = `/chat/${friendId}`;
+      });
+    });
+  </script>
+  <script>
+document.addEventListener("DOMContentLoaded", function() {
+    const postTexts = document.querySelectorAll('.card-text');
+
+    postTexts.forEach(postText => {
+        const textLength = postText.innerText.length;
+
+        if (textLength > 200) { // Adjust this value as needed
+            postText.classList.add('long-content');
+        } else {
+            postText.classList.add('short-content');
+        }
+    });
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.comment-form').forEach(form => {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault(); // Prevent default form submission
+
+      const formData = new FormData(this);
+      const post_id = formData.get('post_id');
+      const content = formData.get('content');
+
+      fetch('/create-comment', {
+        method: 'POST',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: new URLSearchParams(formData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Clear the comment input field
+          this.querySelector('.form-control').value = '';
+
+          // Append the new comment to the comments section
+          const commentsSection = this.previousElementSibling;
+          const newComment = document.createElement('div');
+          newComment.className = 'comment mb-2';
+          newComment.innerHTML = `<strong>You:</strong> ${content}<small class="text-muted"> just now</small>`;
+          commentsSection.appendChild(newComment);
+
+          // Show comments section if hidden
+          commentsSection.style.display = 'block';
+        } else {
+          alert(data.message); // Handle the error
+        }
+      })
+      .catch(error => console.error('Error:', error));
+    });
+  });
+});
+</script>
+<script>
+  // Toggle Comments Function
+function toggleComments(button) {
+    const commentsSection = button.nextElementSibling;
+    const isHidden = commentsSection.style.display === 'none';
+
+    // Toggle visibility
+    commentsSection.style.display = isHidden ? 'block' : 'none';
+
+    // Update button text
+    button.textContent = isHidden ? 'Hide Comments' : 'View Comments';
+}
+
+// Initialize Comments Section
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle existing comments on page load
+    document.querySelectorAll('.view-comments-btn').forEach(button => {
+        const commentsSection = button.nextElementSibling;
+        const isHidden = commentsSection.style.display === 'none';
+
+        // Ensure correct button text
+        button.textContent = isHidden ? 'View Comments' : 'Hide Comments';
+    });
+
+    // Handle form submissions for new comments
+    document.querySelectorAll('.comment-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent default form submission
+
+            const formData = new FormData(this);
+            const post_id = formData.get('post_id');
+            const content = formData.get('content');
+
+            fetch('/create-comment', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: new URLSearchParams(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Clear the comment input field
+                    this.querySelector('.form-control').value = '';
+
+                    // Append the new comment to the comments section
+                    const commentsSection = this.previousElementSibling;
+                    const newComment = document.createElement('div');
+                    newComment.className = 'comment mb-2';
+                    newComment.innerHTML = `<strong>You:</strong> ${content}<small class="text-muted"> just now</small>`;
+                    commentsSection.appendChild(newComment);
+
+                    // Show comments section if hidden
+                    commentsSection.style.display = 'block';
+
+                    // Update button text
+                    this.previousElementSibling.previousElementSibling.textContent = 'Hide Comments';
+                } else {
+                    alert(data.message); // Handle the error
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+});
+
+</script>
+
+</body>
+</html>

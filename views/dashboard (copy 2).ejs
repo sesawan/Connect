@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.6/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f8f9fa;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #007bff;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1000;
+    }
+
+    header .navbar {
+      padding: 0.5rem 1rem;
+    }
+
+    header .navbar-brand {
+      font-size: 1.75rem;
+      font-weight: bold;
+    }
+
+    header .navbar-nav .nav-link {
+      color: #fff;
+      padding: 0.75rem 1.25rem;
+      font-size: 1.125rem;
+    }
+
+    header .navbar-nav .nav-link:hover {
+      background-color: #0056b3;
+      color: #fff;
+      border-radius: 0.25rem;
+    }
+
+    main {
+      padding-top: 4.5rem;
+    }
+
+    section {
+      background-color: #fff;
+      border-radius: 0.5rem;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      margin-bottom: 1rem;
+      border-bottom: 3px solid #007bff;
+      padding-bottom: 0.5rem;
+    }
+
+    .list-group-item {
+      border: none;
+      border-bottom: 1px solid #ddd;
+      padding: 0.75rem 1rem;
+      position: relative;
+    }
+
+    .list-group-item:last-child {
+      border-bottom: none;
+    }
+
+    .btn-primary {
+      background-color: #007bff;
+      border: none;
+    }
+
+    .btn-primary:hover {
+      background-color: #0056b3;
+    }
+
+    .btn-outline-secondary {
+      border-color: #6c757d;
+    }
+
+    .btn-outline-secondary:hover {
+      background-color: #6c757d;
+      color: #fff;
+    }
+
+    .btn-info {
+      background-color: #17a2b8;
+      border: none;
+    }
+
+    .btn-info:hover {
+      background-color: #138496;
+    }
+
+    .btn-success {
+      background-color: #28a745;
+      border: none;
+    }
+
+    .btn-success:hover {
+      background-color: #218838;
+    }
+
+    .btn-danger {
+      background-color: #dc3545;
+      border: none;
+    }
+
+    .btn-danger:hover {
+      background-color: #c82333;
+    }
+
+    .text-muted {
+      color: #6c757d;
+    }
+
+    .form-control {
+      border-radius: 0.25rem;
+      box-shadow: none;
+      border: 1px solid #ced4da;
+    }
+
+    .form-control:focus {
+      border-color: #007bff;
+      box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25);
+    }
+
+    @media (max-width: 768px) {
+      header .navbar-nav {
+        text-align: center;
+      }
+
+      header .navbar-nav .nav-item {
+        margin-bottom: 0.5rem;
+      }
+
+      .form-control {
+        margin-bottom: 0.5rem;
+      }
+
+      section {
+        padding: 1rem;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+      }
+
+      .btn {
+        font-size: 0.875rem;
+        padding: 0.5rem;
+      }
+
+      .list-group-item {
+        font-size: 0.875rem;
+      }
+    }
+
+    @media (max-width: 576px) {
+      header .navbar-brand {
+        font-size: 1.5rem;
+      }
+
+      header .nav-link {
+        padding: 0.5rem;
+        font-size: 1rem;
+      }
+
+      section {
+        padding: 0.75rem;
+      }
+
+      h2 {
+        font-size: 1.25rem;
+      }
+
+      .btn {
+        font-size: 0.75rem;
+        padding: 0.5rem;
+      }
+
+      .list-group-item {
+        font-size: 0.75rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+    <div class="container">
+      <a class="navbar-brand" href="#">Dashboard</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="/newsfeed">Friends Mind</a></li>
+          <li class="nav-item"><a class="nav-link" href="/chat">Chat</a></li>
+          <li class="nav-item"><a class="nav-link" href="/profile/<%= userId %>">My Profile</a></li>
+          <li class="nav-item"><a class="nav-link" href="/notifications">Notifications</a></li>
+          <li class="nav-item"><a class="nav-link" href="/friends">Friends</a></li>
+          <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
+        </ul>
+      </div>
+    </div>
+  </header>
+  
+  <main class="container mt-5 pt-5">
+    <section id="welcome-message" class="mb-4">
+      <h2>Welcome, <%= username %>!</h2>
+    </section>
+    <!-- Create a Post -->
+  <section id="create-post" class="mb-4">
+    <h2>Create a Post</h2>
+    <form id="post-form" action="/create-post" method="post">
+      <div class="form-group">
+        <textarea name="content" class="form-control" rows="3" placeholder="What's on your mind?" required></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary mt-2">Post</button>
+    </form>
+  </section>
+
+  <!-- Display Posts -->
+  <section id="posts" class="mb-4">
+    <h2>Posts</h2>
+    <% if (posts.length > 0) { %>
+      <% posts.forEach(post => { %>
+        <div class="card mb-3">
+          <div class="card-body">
+            <h5 class="card-title"><%= post.author %></h5>
+            <p class="card-text"><%= post.content %></p>
+            <p class="card-text"><small class="text-muted"><%= post.timestamp %></small></p>
+
+            <!-- Display Comments -->
+            <div class="comments">
+              <% postComments.filter(comment => comment.post_id === post.id).forEach(comment => { %>
+                <div class="comment mb-2">
+                  <strong><%= comment.author %>:</strong> <%= comment.content %>
+                  <small class="text-muted"><%= comment.timestamp %></small>
+                </div>
+              <% }) %>
+            </div>
+
+            <!-- Add a Comment -->
+            <form action="/create-comment" method="post">
+              <input type="hidden" name="post_id" value="<%= post.id %>">
+              <div class="form-group">
+                <input type="text" name="content" class="form-control" placeholder="Add a comment..." required>
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm mt-2">Comment</button>
+            </form>
+          </div>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <p>No posts available. Start by creating a new post!</p>
+    <% } %>
+  </section>
+    <section id="search" class="mb-4">
+      <h2 class="mb-3">Search Users</h2>
+      <form action="/search" method="get" class="d-flex flex-column flex-sm-row align-items-sm-center">
+        <input type="text" name="query" class="form-control me-sm-2 mb-2 mb-sm-0" placeholder="Search by name" required aria-label="Search by name">
+        <button type="submit" class="btn btn-primary">Search</button>
+      </form>
+      <% if (typeof searchResults !== 'undefined') { %>
+        <% if (searchResults.length > 0) { %>
+          <ul class="list-group mt-3">
+            <% searchResults.forEach(user => { %>
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span><%= user.name %> (<%= user.email %>)</span>
+                <form action="/send-friend-request" method="post" class="d-inline">
+                  <input type="hidden" name="receiverId" value="<%= user.id %>">
+                  <button type="submit" class="btn btn-outline-secondary btn-sm">Send Friend Request</button>
+                </form>
+              </li>
+            <% }) %>
+          </ul>
+        <% } else { %>
+          <p class="text-muted mt-3">No users found.</p>
+        <% } %>
+      <% } %>
+    </section>
+    
+    <section id="friend-requests" class="mb-4">
+      <h2 class="mb-3">Friend Requests</h2>
+      <% if (requests.length > 0) { %>
+        <ul class="list-group mt-3">
+          <% requests.forEach(request => { %>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span><%= request.name %> (<%= request.email %>)</span>
+              <div>
+                <form action="/accept-friend-request" method="post" class="d-inline">
+                  <input type="hidden" name="requestId" value="<%= request.id %>">
+                  <button type="submit" class="btn btn-success btn-sm me-2">Accept</button>
+                </form>
+                <form action="/decline-friend-request" method="post" class="d-inline">
+                  <input type="hidden" name="requestId" value="<%= request.id %>">
+                  <button type="submit" class="btn btn-danger btn-sm">Decline</button>
+                </form>
+              </div>
+            </li>
+          <% }) %>
+        </ul>
+      <% } else { %>
+        <p class="text-muted mt-3">No friend requests at the moment.</p>
+      <% } %>
+    </section>
+
+    <section id="friend-suggestions" class="mb-4">
+      <h2 class="mb-3">Friend Suggestions</h2>
+      <% if (suggestions.length > 0) { %>
+        <ul class="list-group mt-3">
+          <% suggestions.forEach(suggestion => { %>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span><%= suggestion.name %> (<%= suggestion.email %>)</span>
+              <form action="/send-friend-request" method="post" class="d-inline">
+                <input type="hidden" name="receiverId" value="<%= suggestion.id %>">
+                <button type="submit" class="btn btn-outline-secondary btn-sm">Send Friend Request</button>
+              </form>
+            </li>
+          <% }) %>
+        </ul>
+      <% } else { %>
+        <p class="text-muted mt-3">No suggestions available.</p>
+      <% } %>
+    </section>
+    
+    <section id="friends-list" class="mb-4">
+      <h2 class="mb-3">Friends</h2>
+      <% if (friends.length > 0) { %>
+        <ul class="list-group mt-3">
+          <% friends.forEach(friend => { %>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span><a href="/profile/<%= friend.id %>"><%= friend.name %></a> (<%= friend.email %>)</span>
+              <div>
+                <form action="/remove-friend" method="post" class="d-inline">
+                  <input type="hidden" name="friendId" value="<%= friend.id %>">
+                  <button type="submit" class="btn btn-danger btn-sm me-2">Remove</button>
+                </form>
+                <a href="/chat/<%= friend.id %>" class="btn btn-info btn-sm">Chat</a>
+              </div>
+            </li>
+          <% }) %>
+        </ul>
+      <% } else { %>
+        <p class="text-muted mt-3">No friends added yet.</p>
+      <% } %>
+    </section>
+  </main>
+</body>
+</html>

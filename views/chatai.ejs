@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chatbot</title>
+    <script>
+        async function submitForm(event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            const message = document.getElementById('message').value;
+            const responseElement = document.getElementById('response');
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const data = await response.json();
+
+                if (data.response) {
+                    responseElement.innerHTML = `<strong>Chatbot:</strong> ${data.response}`;
+                } else if (data.error) {
+                    responseElement.innerHTML = `<strong>Error:</strong> ${data.error}`;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                responseElement.innerHTML = '<strong>Error:</strong> An unexpected error occurred.';
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Chatbot</h1>
+    <form id="chatForm" onsubmit="submitForm(event)">
+        <label for="message">You:</label>
+        <input type="text" id="message" name="message" required>
+        <button type="submit">Send</button>
+    </form>
+    <h2>Chatbot:</h2>
+    <p id="response"></p>
+</body>
+</html>

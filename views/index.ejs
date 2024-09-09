@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome | Social Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #ff6b6b;
+            --background-light: #f4f4f4;
+            --background-dark: #2c3e50;
+            --text-light: #ecf0f1;
+            --text-dark: #34495e;
+        }
+        body {
+            margin: 0;
+            font-family: 'Montserrat', sans-serif;
+            background: var(--background-dark);
+            color: var(--text-light);
+            overflow-x: hidden;
+        }
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(26, 26, 46, 0.9);
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            transition: background 0.3s ease;
+            box-sizing: border-box;
+        }
+        nav .logo {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            font-weight: 600;
+            text-decoration: none;
+        }
+        nav a {
+            color: var(--text-light);
+            text-decoration: none;
+            margin: 0 1rem;
+            font-weight: 600;
+        }
+        nav a:hover {
+            color: var(--primary-color);
+            text-decoration: underline;
+        }
+        nav .theme-toggle {
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--text-light);
+        }
+        header.hero {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(to bottom right, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://source.unsplash.com/random/1600x900') no-repeat center center fixed;
+            background-size: cover;
+            text-align: center;
+            padding: 2rem;
+        }
+        header .hero-content {
+            max-width: 700px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            animation: fadeInUp 1s ease-in-out;
+        }
+        header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+        header p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            color: #dcdcdc;
+        }
+        .cta-buttons a {
+            display: inline-block;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
+            background-color: var(--primary-color);
+            border-radius: 50px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+        }
+        .cta-buttons a:hover {
+            background-color: #ff5252;
+            box-shadow: 0 6px 16px rgba(255, 82, 82, 0.5);
+            transform: translateY(-2px);
+        }
+        .cta-buttons a:active {
+            transform: translateY(2px);
+            box-shadow: 0 3px 9px rgba(255, 82, 82, 0.3);
+        }
+        /* About Section Styles */
+	.about {
+	    background: #fff;
+	    color: var(--text-dark);
+	    padding: 4rem 2rem;
+	    text-align: center;
+	    border-top: 1px solid #e0e0e0;
+	    border-bottom: 1px solid #e0e0e0;
+	}
+
+	.about h2 {
+	    font-size: 2.5rem;
+	    margin-bottom: 1rem;
+	    font-weight: 600;
+	    color: var(--primary-color);
+	}
+
+	.about p {
+	    font-size: 1.25rem;
+	    line-height: 1.6;
+	    margin: 0 auto;
+	    max-width: 800px;
+	    color: var(--text-dark);
+	}
+
+	@media (max-width: 768px) {
+	    .about {
+		padding: 2rem 1rem;
+	    }
+
+	    .about h2 {
+		font-size: 2rem;
+	    }
+
+	    .about p {
+		font-size: 1rem;
+	    }
+	}
+
+        .features, .chatbot, .testimonials {
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+        .features {
+            background: var(--background-light);
+            color: var(--text-dark);
+        }
+        .features .feature {
+            display: inline-block;
+            width: 30%;
+            padding: 1.5rem;
+            margin: 1rem;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        .features .feature:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+        .features i {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        .chatbot {
+            background: var(--background-dark);
+            color: var(--text-light);
+        }
+        .chatbot h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        .chatbot p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+        .chatbot button {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+        }
+        .chatbot button:hover {
+            background-color: #ff5252;
+            box-shadow: 0 6px 16px rgba(255, 82, 82, 0.5);
+            transform: translateY(-2px);
+        }
+        .chatbot button:active {
+            transform: translateY(2px);
+            box-shadow: 0 3px 9px rgba(255, 82, 82, 0.3);
+        }
+        .testimonials {
+            background: #fff;
+            color: var(--text-dark);
+        }
+        .testimonials h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        .testimonials p {
+            font-size: 1.2rem;
+            margin: 1rem 0;
+            font-style: italic;
+        }
+        footer.footer {
+            background: rgba(26, 26, 46, 0.9);
+            color: var(--text-light);
+            padding: 1rem;
+            text-align: center;
+        }
+        footer a {
+            color: var(--primary-color);
+            text-decoration: none;
+            margin: 0 0.5rem;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            nav a {
+                margin: 0.5rem 0;
+            }
+            header h1 {
+                font-size: 2.5rem;
+            }
+            header p {
+                font-size: 1rem;
+            }
+            .cta-buttons a {
+                padding: 0.5rem 1.5rem;
+                font-size: 0.9rem;
+            }
+            .features .feature {
+                width: 100%;
+                margin-bottom: 1.5rem;
+            }
+            .chatbot button {
+                padding: 0.75rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="/" class="logo">Social Hub</a>
+        <div>
+            <a href="#about">About</a>
+            <a href="#features">Features</a>
+            <a href="#chatbot">Chatbot</a>
+            <a href="#testimonials">Testimonials</a>
+            <span class="theme-toggle" onclick="toggleTheme()">
+                <i class="fas fa-moon"></i>
+            </span>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <h1>Welcome to Social Hub</h1>
+            <p>Connect, share, and engage with a community that cares. Experience the future of social networking with our innovative platform.</p>
+            <div class="cta-buttons">
+                <a href="/register">Sign Up</a>
+                <a href="/login">Log In</a>
+            </div>
+        </div>
+    </header>
+    
+    <section id="about" class="about">
+        <h2>About Social Hub</h2>
+        <p>Social Hub is your go-to platform for connecting with friends, sharing experiences, and discovering new interests. Whether you're looking to catch up with old friends or make new ones, Social Hub has you covered.</p>
+    </section>
+    
+    <section id="features" class="features">
+        <h2>Features</h2>
+        <div class="feature">
+            <i class="fas fa-user-friends"></i>
+            <h3>Connect with Friends</h3>
+            <p>Find and connect with people you know or meet new friends who share your interests.</p>
+        </div>
+        <div class="feature">
+            <i class="fas fa-share-square"></i>
+            <h3>Share Moments</h3>
+            <p>Post photos, videos, and updates to keep your friends in the loop.</p>
+        </div>
+        <div class="feature">
+            <i class="fas fa-comments"></i>
+            <h3>Engage in Conversations</h3>
+            <p>Join group chats, comment on posts, and be part of lively discussions.</p>
+        </div>
+    </section>
+
+    <section id="chatbot" class="chatbot">
+        <h2>Introducing Our AI Chatbot</h2>
+        <p>Feeling lonely? Our AI chatbot is here to keep you company. Chat with our AI, share your thoughts, and find comfort in a conversation tailored just for you.</p>
+        <button onclick="openChat()">Start Chatting</button>
+    </section>
+
+    <section id="testimonials" class="testimonials">
+        <h2>What Our Users Are Saying</h2>
+        <p>"The AI chatbot has really helped me during tough times. It's like having a friend who's always there to listen."</p>
+        <p>"Social Hub's chatbot is amazing! It's made me feel less lonely and more connected."</p>
+    </section>
+
+    <footer class="footer">
+        <div>&copy; 2024 Social Hub. All rights reserved.</div>
+        <div>
+            <a href="/privacy-policy">Privacy Policy</a>
+            <a href="/terms-of-service">Terms of Service</a>
+        </div>
+    </footer>
+
+    <script>
+        function openChat() {
+            // Function to open the chatbot interface
+            alert("Opening chat interface...");
+        }
+        
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.style.background === 'var(--background-dark)' ? 'light' : 'dark';
+            if (currentTheme === 'light') {
+                body.style.background = 'var(--background-light)';
+                body.style.color = 'var(--text-dark)';
+                document.querySelector('nav').style.background = 'rgba(255, 255, 255, 0.9)';
+                document.querySelector('nav .logo').style.color = 'var(--primary-color)';
+                document.querySelectorAll('.footer').forEach(el => el.style.background = 'rgba(255, 255, 255, 0.9)');
+                document.querySelectorAll('.footer a').forEach(el => el.style.color = 'var(--primary-color)');
+                document.querySelectorAll('.cta-buttons a').forEach(el => el.style.backgroundColor = 'var(--primary-color)');
+                document.querySelector('.theme-toggle i').classList.replace('fa-moon', 'fa-sun');
+            } else {
+                body.style.background = 'var(--background-dark)';
+                body.style.color = 'var(--text-light)';
+                document.querySelector('nav').style.background = 'rgba(26, 26, 46, 0.9)';
+                document.querySelector('nav .logo').style.color = 'var(--primary-color)';
+                document.querySelectorAll('.footer').forEach(el => el.style.background = 'rgba(26, 26, 46, 0.9)');
+                document.querySelectorAll('.footer a').forEach(el => el.style.color = 'var(--primary-color)');
+                document.querySelectorAll('.cta-buttons a').forEach(el => el.style.backgroundColor = 'var(--primary-color)');
+                document.querySelector('.theme-toggle i').classList.replace('fa-sun', 'fa-moon');
+            }
+        }
+    </script>
+</body>
+</html>

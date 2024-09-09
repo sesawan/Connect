@@ -1,0 +1,44 @@
+<!-- profile.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const socket = io();
+            const userId = '<%= userId %>';
+
+            socket.emit('joinRoom', userId);
+
+            // Handle sending a message
+            document.getElementById('sendMessage').addEventListener('click', () => {
+                const receiverId = document.getElementById('receiverId').value;
+                const message = document.getElementById('message').value;
+
+                socket.emit('sendMessage', { senderId: userId, receiverId, message });
+                document.getElementById('message').value = '';
+            });
+
+            // Handle receiving a message
+            socket.on('message', (data) => {
+                const chatWindow = document.getElementById('chatWindow');
+                chatWindow.innerHTML += `<p><strong>User ${data.senderId}:</strong> ${data.message}</p>`;
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1><%= user.name %>'s Profile</h1>
+    <button id="startChat">Start Chat</button>
+
+    <h2>Chat</h2>
+    <div id="chatWindow" style="height: 400px; overflow-y: scroll;"></div>
+    <input type="hidden" id="receiverId" value="<%= user.id %>">
+    <input type="text" id="message" placeholder="Message">
+    <button id="sendMessage">Send</button>
+</body>
+</html>

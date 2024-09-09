@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #e9ecef;
+            color: #212529;
+        }
+        .container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: #007bff;
+            font-size: 24px;
+        }
+        p {
+            margin: 10px 0;
+            color: #495057;
+            font-size: 16px;
+        }
+        .message, .error {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .message {
+            color: #28a745;
+        }
+        .error {
+            color: #dc3545;
+        }
+        button {
+            background-color: #007bff;
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+        button:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(38, 143, 255, 0.5);
+        }
+        .resend-container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Email Verification</h1>
+        <p>Please check your email for a verification link. If you don't see it, check your spam or junk folder.</p>
+
+        <% if (typeof message !== 'undefined') { %>
+            <p class="message"><%= message %></p>
+        <% } %>
+
+        <% if (typeof error !== 'undefined') { %>
+            <p class="error"><%= error %></p>
+        <% } %>
+
+        <div class="resend-container">
+            <p>Didn't receive the email? <strong>Resend it!</strong></p>
+            <form action="/resend-verification" method="post">
+                <input type="hidden" name="email" value="<%= email %>">
+                <button type="submit">Resend Verification Email</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

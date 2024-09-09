@@ -1,0 +1,2177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>chatApp</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+/* Base styles */
+body {
+    font-family: 'Arial', sans-serif;
+    color: #333;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+/* Navbar styles */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background-color: #007bff;
+    color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 1000;
+}
+
+.navbar .brand {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.navbar .nav-links {
+    display: flex;
+    gap: 25px;
+}
+
+.navbar .nav-links a {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+    transition: color 0.3s;
+}
+
+.navbar .nav-links a:hover {
+    color: #ffdd57;
+}
+
+.navbar .search-container {
+    position: relative;
+    flex-grow: 1;
+    max-width: 400px;
+    margin: 0 20px;
+}
+
+.navbar .search-container input {
+    width: 100%;
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: none;
+    font-size: 16px;
+}
+
+.navbar .search-container .fa-search {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+    cursor: pointer;
+}
+
+/* Chat Icon */
+.chat-icon {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 20px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.chat-icon:hover {
+  background-color: #0056b3;
+  transform: scale(1.1);
+}
+
+/* Friend List Container */
+.friend-list-container {
+  position: absolute;
+  top: 60px;
+  right: 0;
+  width: 320px;
+  max-height: 400px;
+  background-color: #ffffff;
+  border: 1px solid #ccc; /* Light gray border for better definition */
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  display: none;
+  z-index: 1000;
+  overflow-y: auto;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+/* Header Styling */
+.friend-list-container h3 {
+  font-size: 18px;
+  color: #007bff; /* Consistent with chat icon color */
+  margin-bottom: 15px;
+  text-align: center;
+  font-weight: bold;
+  border-bottom: 2px solid #e0e0e0; /* Subtle border for separation */
+  padding-bottom: 10px;
+}
+
+/* Friend Items List */
+.friend-list-container ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.friend-item {
+  padding: 12px;
+  margin-bottom: 10px;
+  background-color: #f0f2f5; /* Slightly darker background for contrast */
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.friend-item:hover {
+  background-color: #e1e4e8; /* Slightly darker on hover for better visibility */
+  transform: scale(1.02);
+}
+
+.friend-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Display control */
+.friend-list-container.show {
+  display: block;
+  opacity: 1;
+  visibility: visible;
+}
+/* Chat Icon */
+.chat-icon {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 20px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.chat-icon:hover {
+  background-color: #0056b3;
+  transform: scale(1.1);
+}
+
+/* Styles for chat container on larger screens */
+.friend-list-container {
+    position: absolute;
+    top: 60px; /* Adjust as needed */
+    right: 10px; /* Adjust as needed */
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    width: 250px; /* Default width for larger screens */
+    max-height: 400px; /* Adjust as needed */
+    overflow-y: auto; /* Scroll if content exceeds max height */
+    z-index: 1000;
+    display: none; /* Initially hidden */
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+    .friend-list-container {
+        position: fixed; /* Fixed position for mobile */
+        top: 50px; /* Adjust to fit your layout */
+        right: 0;
+        width: 100%; /* Full width on mobile */
+        max-width: none; /* Override max-width */
+        height: calc(100% - 50px); /* Full height minus some top margin */
+        border-radius: 0; /* Remove border-radius for full width */
+        border: none; /* Remove border for full width */
+        box-shadow: none; /* Remove box-shadow for full width */
+        z-index: 999; /* Lower z-index to fit within mobile constraints */
+        overflow-y: auto; /* Ensure scrollability */
+    }
+
+    .friend-list-container h3 {
+        padding: 15px;
+        border-bottom: 1px solid #ddd;
+        background-color: #f5f5f5; /* Background color for header */
+    }
+
+    .friend-list-container ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .friend-list-container .friend-item {
+        padding: 15px;
+        cursor: pointer;
+        border-bottom: 1px solid #ddd;
+        background-color: #fff; /* Background color for items */
+    }
+
+    .friend-list-container .friend-item:hover {
+        background-color: #f0f0f0; /* Hover effect */
+    }
+}
+
+
+/* Header Styling */
+.friend-list-container h3 {
+  font-size: 18px;
+  color: #007bff; /* Consistent with chat icon color */
+  margin-bottom: 15px;
+  text-align: center;
+  font-weight: bold;
+  border-bottom: 2px solid #e0e0e0; /* Subtle border for separation */
+  padding-bottom: 10px;
+}
+
+/* Friend Items List */
+.friend-list-container ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.friend-item {
+  padding: 12px;
+  margin-bottom: 10px;
+  background-color: #f0f2f5; /* Slightly darker background for contrast */
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: #000; /* Black text color for better visibility */
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.friend-item:hover {
+  background-color: #e1e4e8; /* Slightly darker on hover for better visibility */
+  transform: scale(1.02);
+}
+
+.friend-item:last-child {
+  margin-bottom: 0;
+}
+
+
+/* Display control */
+.friend-list-container.show {
+  display: block;
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Notification styles */
+.navbar .icons {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+/* General ai chat styling */
+/* Base styles for larger screens */
+.chat-container {
+    display: none; /* Initially hidden */
+    flex-direction: column;
+    width: 350px; /* Adjusted width */
+    height: 500px; /* Increased height for more message space */
+    border: 1px solid #ddd;
+    background: #f9f9f9;
+    position: fixed;
+    bottom: 20px; /* Adjusted space from the bottom */
+    right: 20px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    border-radius: 10px; /* More rounded corners */
+    z-index: 1000; /* Ensure it's on top of other elements */
+    overflow: hidden;
+}
+
+/* Style for the chat head avatar */
+.chat-head-avatar {
+    cursor: pointer;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #007bff;
+    border: 3px solid #fff;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+}
+
+.chat-head-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Header styling */
+.chat-header {
+    background-color: #007bff;
+    color: #fff;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+}
+
+/* Close button styling */
+.close-chat {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 24px;
+    cursor: pointer;
+    transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.close-chat:hover {
+    color: #ffdddd;
+    transform: scale(1.1);
+}
+
+/* Messages area styling */
+.chat-messages {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+/* Style for individual chat messages */
+.chat-message {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    max-width: 75%;
+    position: relative;
+    word-wrap: break-word; /* Ensures text wraps within the bubble */
+}
+
+/* Style for user messages */
+.chat-message.user {
+    background-color: #007bff;
+    color: #fff;
+    margin-left: auto; /* Align to the right */
+    border-bottom-right-radius: 0; /* Rounded corners on left side */
+    border-top-right-radius: 0; /* Rounded corners on left side */
+}
+
+/* Style for AI messages */
+.chat-message.ai {
+    background-color: #f1f1f1;
+    color: #333;
+    border-bottom-left-radius: 0; /* Rounded corners on right side */
+    border-top-left-radius: 0; /* Rounded corners on right side */
+}
+
+/* Style for message avatar */
+.message-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+}
+
+.message-avatar img {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Style for message content */
+.message-content {
+    flex: 1;
+}
+
+/* Add arrow pointing to the message bubble */
+.chat-message.user::before {
+    content: '';
+    position: absolute;
+    right: -10px; /* Position the arrow to the right of the bubble */
+    top: 12px;
+    width: 0;
+    height: 0;
+    border-top: 12px solid transparent;
+    border-bottom: 12px solid transparent;
+    border-left: 12px solid #007bff; /* Match background color of the user bubble */
+}
+
+.chat-message.ai::before {
+    content: '';
+    position: absolute;
+    left: -10px; /* Position the arrow to the left of the bubble */
+    top: 12px;
+    width: 0;
+    height: 0;
+    border-top: 12px solid transparent;
+    border-bottom: 12px solid transparent;
+    border-right: 12px solid #f1f1f1; /* Match background color of the AI bubble */
+}
+
+/* Style for the chat input container */
+.chat-input-container {
+    display: flex;
+    padding: 12px;
+    border-top: 1px solid #ddd;
+    background-color: #fff;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+/* Style for the chat input field */
+.chat-input-container input {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    margin-right: 12px;
+    font-size: 14px;
+}
+
+/* Style for the send button */
+.chat-input-container button {
+    padding: 12px 20px;
+    border: none;
+    background-color: #007bff;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 20px;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.chat-input-container button:hover {
+    background-color: #0056b3;
+}
+
+/* Typing Indicator Styling */
+.typing-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.typing-indicator .dot {
+    width: 10px;
+    height: 10px;
+    margin: 0 4px;
+    background-color: #007bff;
+    border-radius: 50%;
+    animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-indicator .dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-indicator .dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typing {
+    0% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design for smaller screens */
+@media (max-width: 768px) {
+    .chat-container {
+        width: 100%;
+        height: 100vh; /* Full height of the viewport */
+        bottom: 0;
+        right: 0;
+        border-radius: 0;
+    }
+
+    .chat-head-avatar {
+        width: 50px;
+        height: 50px;
+    }
+
+    .chat-header {
+        font-size: 14px;
+        padding: 10px 12px;
+    }
+
+    .chat-messages {
+        padding: 12px;
+        font-size: 14px;
+    }
+
+    .chat-message {
+        padding: 10px 12px;
+        max-width: 85%;
+    }
+
+    .message-avatar img {
+        width: 36px;
+        height: 36px;
+    }
+
+    .chat-input-container {
+        padding: 10px;
+        border-top: 1px solid #ddd;
+    }
+
+    .chat-input-container input {
+        padding: 10px;
+        font-size: 12px;
+    }
+
+    .chat-input-container button {
+        padding: 10px 16px;
+        font-size: 12px;
+    }
+
+    .typing-indicator .dot {
+        width: 8px;
+        height: 8px;
+    }
+}
+
+/* Responsive Design for very small screens (e.g., mobile landscape) */
+@media (max-width: 480px) {
+    .chat-container {
+        height: 100vh; /* Ensure full viewport height */
+    }
+
+    .chat-head-avatar {
+        width: 40px;
+        height: 40px;
+    }
+
+    .chat-header {
+        font-size: 12px;
+        padding: 8px 10px;
+    }
+
+    .chat-messages {
+        font-size: 13px;
+    }
+
+    .chat-message {
+        padding: 8px 10px;
+        max-width: 90%;
+    }
+
+    .message-avatar img {
+        width: 30px;
+        height: 30px;
+    }
+
+    .chat-input-container {
+        padding: 8px;
+    }
+
+    .chat-input-container input {
+        padding: 8px;
+        font-size: 12px;
+    }
+
+    .chat-input-container button {
+        padding: 8px 14px;
+        font-size: 12px;
+    }
+
+    .typing-indicator .dot {
+        width: 6px;
+        height: 6px;
+    }
+}
+
+/* Notifications Button */
+#notifications-button {
+    background-color: transparent; /* Transparent background */
+    color: white; /* White text color */
+    border: none; /* No border */
+    font-size: 24px; /* Larger font size */
+    position: relative; /* Position relative for badge positioning */
+    outline: none; /* Remove outline */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: color 0.3s, transform 0.3s; /* Smooth transition */
+}
+
+#notifications-button:hover {
+    color: #ffdd57; /* Yellow color on hover */
+    transform: scale(1.1); /* Slightly enlarge on hover */
+}
+
+/* Notifications Badge */
+#notifications-badge {
+    position: absolute; /* Position badge relative to button */
+    top: -8px; /* Position above button */
+    right: -8px; /* Position to the right of button */
+    background-color: #dc3545; /* Red background */
+    color: white; /* White text color */
+    border-radius: 50%; /* Circular badge */
+    padding: 5px 10px; /* Padding inside badge */
+    font-size: 12px; /* Smaller font size */
+    font-weight: bold; /* Bold text */
+    min-width: 20px; /* Minimum width for the badge */
+    text-align: center; /* Center text inside badge */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Shadow for depth */
+}
+
+/* Notification Dropdown Styles */
+#notifications-dropdown {
+    display: none; /* Hidden by default */
+    position: absolute; /* Positioned relative to parent */
+    background-color: #fff; /* White background */
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+    z-index: 1000; /* Ensure it sits above other content */
+    width: 350px; /* Fixed width */
+    border-radius: 10px; /* Rounded corners */
+    top: 60px; /* Position below the button */
+    right: 0; /* Align to the right */
+    opacity: 0; /* Hidden initially */
+    transform: scaleY(0); /* Hidden initially */
+    transform-origin: top; /* Transform from top */
+    transition: opacity 0.3s, transform 0.3s; /* Smooth transition */
+    overflow-y: auto; /* Scrollable content */
+    max-height: 500px; /* Max height for scrolling */
+    padding: 0; /* No padding */
+}
+
+#notifications-dropdown.show {
+    display: block; /* Show dropdown */
+    opacity: 1; /* Fully opaque */
+    transform: scaleY(1); /* Scale up */
+}
+
+/* Notification Card Styles */
+.notification-card {
+    display: flex; /* Flexbox layout */
+    align-items: flex-start; /* Align items at the start */
+    padding: 15px; /* Padding inside card */
+    border-bottom: 1px solid #ddd; /* Bottom border */
+    transition: background-color 0.3s, box-shadow 0.3s; /* Smooth transition */
+    cursor: pointer; /* Pointer cursor */
+    gap: 15px; /* Space between items */
+    background-color: #ffffff; /* White background */
+    border-radius: 8px; /* Rounded corners */
+}
+
+.notification-card:last-child {
+    border-bottom: none; /* Remove bottom border for last item */
+}
+
+.notification-card:hover {
+    background-color: #f9f9f9; /* Light gray background on hover */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Shadow on hover */
+}
+
+/* Notification Icon */
+.notification-icon {
+    font-size: 24px; /* Large icon size */
+    color: #007bff; /* Blue color */
+    transition: color 0.3s; /* Smooth transition */
+}
+
+.notification-icon:hover {
+    color: #0056b3; /* Darker blue on hover */
+}
+
+/* Notification Content */
+.notification-content {
+    flex: 1; /* Take up remaining space */
+}
+
+.notification-header {
+    font-weight: bold; /* Bold text */
+    margin-bottom: 4px; /* Space below header */
+    font-size: 16px; /* Slightly larger font size */
+    color: #333; /* Dark text color */
+}
+
+.notification-body {
+    font-size: 14px; /* Regular font size */
+    color: #666; /* Light gray text color */
+    margin-bottom: 8px; /* Space below body */
+}
+
+/* User Profile Image */
+#user-profile-img {
+    width: 50px; /* Fixed width */
+    height: 50px; /* Fixed height */
+    border-radius: 50%; /* Circular image */
+    object-fit: cover; /* Cover image area without distortion */
+    margin-right: 10px; /* Space between image and text */
+}
+
+/* No Notifications Message */
+.no-notifications {
+    padding: 15px; /* Padding around text */
+    text-align: center; /* Center text */
+    color: #666; /* Light gray text color */
+    font-size: 16px; /* Regular font size */
+    font-style: italic; /* Italic text */
+}
+
+/* Notification Action Buttons */
+.notification-actions {
+    display: flex; /* Flexbox layout */
+    gap: 12px; /* Space between buttons */
+    margin-top: 10px; /* Space above actions */
+}
+
+.action-button {
+    background-color: #007bff; /* Blue background */
+    color: white; /* White text color */
+    border: none; /* No border */
+    padding: 8px 18px; /* Padding inside button */
+    border-radius: 6px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor */
+    font-size: 14px; /* Regular font size */
+    font-weight: bold; /* Bold text */
+    transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s; /* Smooth transition */
+}
+
+.action-button.accept-button {
+    background-color: #28a745; /* Green background for accept */
+}
+
+.action-button.decline-button {
+    background-color: #dc3545; /* Red background for decline */
+}
+
+.action-button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+    transform: translateY(-2px); /* Lift button slightly */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow on hover */
+}
+
+.action-button.accept-button:hover {
+    background-color: #218838; /* Darker green for accept */
+}
+
+.action-button.decline-button:hover {
+    background-color: #c82333; /* Darker red for decline */
+}
+
+/* User Profile Dropdown */
+.user-profile {
+    position: relative; /* Position relative for dropdown */
+    display: inline-block; /* Inline block for alignment */
+}
+
+/* User Profile Image */
+.user-profile-img {
+    width: 40px; /* Fixed width */
+    height: 40px; /* Fixed height */
+    border-radius: 50%; /* Circular image */
+    object-fit: cover; /* Cover image area without distortion */
+    margin-right: 10px; /* Space between image and text */
+}
+
+/* User Dropdown Menu */
+.user-dropdown {
+    display: none; /* Hidden by default */
+    position: absolute; /* Positioned relative to parent */
+    background-color: white; /* White background */
+    min-width: 150px; /* Minimum width for dropdown */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Shadow for depth */
+    z-index: 1; /* Ensure it sits above other content */
+    right: 0; /* Align to the right */
+    border-radius: 5px; /* Rounded corners */
+    overflow: hidden; /* Hide overflow */
+    transform-origin: top; /* Transform from top */
+    transform: scaleY(0); /* Hidden initially */
+    opacity: 0; /* Hidden initially */
+    transition: transform 0.3s, opacity 0.3s; /* Smooth transition */
+}
+
+.user-dropdown.show {
+    display: block; /* Show dropdown */
+    transform: scaleY(1); /* Scale up */
+    opacity: 1; /* Fully opaque */
+}
+
+.user-dropdown a {
+    color: black; /* Black text color */
+    padding: 12px 16px; /* Padding inside dropdown items */
+    text-decoration: none; /* Remove underline */
+    display: block; /* Block display for full width */
+    font-size: 14px; /* Regular font size */
+}
+
+.user-dropdown a:hover {
+    background-color: #ddd; /* Light gray background on hover */
+}
+
+
+/* Post Creation Form */
+/* Profile Photo Container */
+.profile-photo-container {
+    margin-right: 15px;
+    display: flex;
+    align-items: flex-start;
+}
+
+.profile-photo {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #007bff;
+}
+
+/* Form Styling */
+#post-form .form-group {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+#post-form textarea {
+    width: calc(450px); /* Full width of the flex container */
+    height: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 16px;
+    background-color: #f9f9f9;
+    color: #444;
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+    resize: none;
+}
+
+#post-form textarea:focus {
+    border-color: #007bff;
+    background-color: #fff;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.25);
+}
+
+/* Image Upload Container */
+.image-upload-container {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+    position: relative;
+}
+
+.image-upload-icon {
+    font-size: 24px;
+    color: #007bff;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    margin-left: 10px; /* Space between icon and input */
+}
+
+.image-upload-icon:hover {
+    color: #0056b3;
+}
+
+#post-form input[type="file"] {
+    display: none; /* Hidden by default */
+}
+
+/* Initially hide media previews */
+/* Initially hide media previews */
+.media-preview-container {
+  display: none; /* Hide the preview container by default */
+}
+
+.media-preview {
+  max-width: 100%;
+  max-height: 300px;
+  display: block;
+  margin: 0 auto;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+#image-preview {
+  display: block;
+}
+
+#video-preview {
+  display: block;
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.media-preview.d-none {
+  display: none;
+}
+
+.profile-photo {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.media-upload-container {
+  margin-top: 1em;
+}
+
+
+/* Add some styling for the default profile photo */
+.profile-photo {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profile-photo-sm {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.post-image, .post-video {
+  width: 100%;
+  height: auto;
+  margin-top: 1em;
+  border-radius: 5px;
+}
+
+.post-video {
+  border: 1px solid #ddd;
+}
+
+.media-upload-container {
+  margin-top: 1em;
+}
+
+/* Button Styling */
+#post-form button {
+    background-color: #007bff;
+    color: #ffffff;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-weight: bold;
+}
+
+#post-form button:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+}
+
+#post-form button:disabled {
+    background-color: #b0bec5;
+    cursor: not-allowed;
+}
+
+
+/* Post Display */
+/* General Card Styles */
+.card {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    max-width: 600px;
+    margin: 20px auto;
+    overflow: hidden;
+}
+
+.post-video {
+    width: 100%;
+    height: auto;
+    display: block;
+    margin-top: 10px;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+/* Post Header Styles */
+.post-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.profile-photo-sm {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 15px;
+    border: 2px solid #e0e0e0;
+}
+
+.card-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #333;
+    margin: 0;
+    line-height: 1.3;
+}
+
+/* Post Content Styles */
+.card-text {
+    font-size: 1rem; /* Default size */
+    color: #444;
+    line-height: 1.6;
+    margin-bottom: 15px;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #f5f5f5;
+    overflow-wrap: break-word;
+}
+
+/* Adjust text size based on content length */
+.card-text.short-content {
+    font-size: 1.2rem; /* Larger text for shorter content */
+}
+
+.card-text.long-content {
+    font-size: 1rem; /* Smaller text for longer content */
+}
+
+.card-text small {
+    color: #777;
+}
+
+.card-text .timestamp {
+    display: block;
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+/* Style for post images */
+img.post-image {
+  display: block;
+  margin: 10px auto; /* Centers the image horizontally */
+  max-width: 100%; /* Ensure the image doesn't exceed the width of its container */
+  max-height: 400px; /* Limit the height of the image */
+  width: auto; /* Let the width adjust automatically */
+  height: auto; /* Let the height adjust automatically */
+  border-radius: 8px; /* Rounded corners */
+  object-fit: cover; /* Cover the entire container while preserving aspect ratio */
+}
+
+/* Style for the timestamp */
+.timestamp {
+  display: block;
+  font-size: 0.9em;
+  color: #888;
+}
+
+/* Comment Section Styles */
+.comments {
+    margin-top: 20px;
+    display: none; /* Initially hidden */
+}
+
+/* Style for individual comments */
+.comment {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    background-color: #fafafa;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.comment:last-of-type {
+    border-bottom: none;
+}
+
+.comment strong {
+    color: #333;
+    font-weight: 600;
+}
+
+/* Updated Comment Form Style with Button on Right */
+.comment-form {
+    display: flex; /* Aligns the input and button horizontally */
+    margin-top: 20px;
+    padding-top: 10px;
+    border-top: 1px solid #ddd;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.comment-form .form-control {
+    flex: 1; /* Takes up the remaining space */
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin-right: 10px; /* Adds space between input and button */
+}
+
+.comment-form .btn {
+    background-color: #007bff;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    align-self: center; /* Vertically aligns the button */
+}
+
+.comment-form .btn:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+}
+
+/* View/Hide Comments Button */
+.btn-link.view-comments-btn {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    border: none;
+    background: none;
+    font-size: 14px;
+}
+
+.btn-link.view-comments-btn:hover {
+    text-decoration: underline;
+} 
+
+
+/* Friend Suggestions Container */
+.suggestions-container {
+    display: flex; /* Align items horizontally */
+    overflow-x: auto; /* Enable horizontal scrolling */
+    padding: 10px; /* Add padding around the container */
+    margin: 0 auto; /* Center the container horizontally */
+    max-width: 600px; 
+    box-sizing: border-box; /* Include padding and border in element's total width and height */
+    white-space: nowrap; /* Prevent wrapping of child elements */
+}
+
+/* Style for each suggestion card */
+.suggestion-card {
+    display: inline-flex; /* Display cards in a row */
+    flex-direction: column; /* Arrange card contents vertically */
+    align-items: center; /* Center content horizontally */
+    background-color: #ffffff; /* White background for cards */
+    border: 1px solid #e0e0e0; /* Light grey border */
+    border-radius: 12px; /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    padding: 15px; /* Padding inside each card */
+    min-width: 200px; /* Minimum width of each card */
+    margin-right: 15px; /* Space between cards */
+    text-align: center; /* Center text inside the card */
+    box-sizing: border-box; /* Include padding and border in width */
+}
+
+/* Style for profile image */
+.profile-img {
+    width: 100px; /* Fixed width for profile image */
+    height: 100px; /* Fixed height for profile image */
+    object-fit: cover; /* Cover the area of the image without distortion */
+    border-radius: 50%; /* Round profile image */
+    margin-bottom: 10px; /* Space below the image */
+}
+
+/* Style for suggestion info section */
+.suggestion-info {
+    text-align: center; /* Center text inside the info section */
+}
+
+/* Style for suggestion name */
+.suggestion-name {
+    font-size: 1.1em; /* Slightly larger font size for names */
+    margin-bottom: 5px; /* Space below name */
+}
+
+/* Style for suggestion email */
+.suggestion-email {
+    font-size: 0.9em; /* Slightly smaller font size for email */
+    color: #666; /* Grey color for email */
+    margin-bottom: 10px; /* Space below email */
+}
+
+/* Style for buttons */
+.btn-primary {
+    background-color: #007bff; /* Blue background color for buttons */
+    color: #fff; /* White text color */
+    border: none; /* Remove default border */
+    border-radius: 5px; /* Rounded corners */
+    padding: 10px 15px; /* Padding inside button */
+    cursor: pointer; /* Pointer cursor on hover */
+    font-size: 0.9em; /* Adjust font size for buttons */
+}
+
+.btn-primary:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+/* Mobile-friendly styles */
+@media only screen and (max-width: 600px) {
+
+    /* Friend Suggestions Container */
+    .suggestions-container {
+        max-width: 100%; /* Full width on mobile */
+        padding: 5px; /* Reduce padding for smaller screens */
+        overflow-x: scroll; /* Enable horizontal scrolling */
+    }
+
+    /* Style for each suggestion card */
+    .suggestion-card {
+        min-width: 120px; /* Smaller minimum width for cards */
+        margin-right: 10px; /* Space between cards */
+        padding: 8px; /* Reduced padding inside cards */
+        flex: 0 0 auto; /* Prevent cards from shrinking */
+    }
+
+    /* Style for profile image */
+    .profile-img {
+        width: 60px; /* Smaller profile image */
+        height: 60px; /* Match width and height */
+        margin-bottom: 6px; /* Adjust margin below image */
+    }
+
+    /* Style for suggestion name */
+    .suggestion-name {
+        font-size: 0.9em; /* Slightly smaller font size */
+        margin-bottom: 4px; /* Adjust space below name */
+    }
+
+    /* Style for suggestion email */
+    .suggestion-email {
+        font-size: 0.8em; /* Smaller font size */
+        color: #666; /* Grey color for email */
+        margin-bottom: 6px; /* Adjust space below email */
+    }
+
+    /* Style for buttons */
+    .btn-primary {
+        font-size: 0.8em; /* Smaller font size */
+        padding: 6px 10px; /* Adjust padding for buttons */
+    }
+}
+
+
+/* Footer Styles */
+.footer {
+    background-color: #007bff;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    font-size: 14px;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+    box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.footer a {
+    color: #ffdd57;
+    text-decoration: none;
+}
+
+.footer a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .navbar .brand,
+    .navbar .nav-links {
+        display: none;
+    }
+
+    .navbar .search-container {
+        display: block; /* Ensure the search bar is still visible */
+    }
+}
+/* Mobile Friend List Container */
+@media only screen and (max-width: 600px) {
+    .friend-list-container {
+        width: 100%; /* Full width on mobile */
+        max-height: 300px; /* Adjust max height for mobile */
+        top: 50px; /* Adjust position for mobile */
+    }
+
+    .friend-item {
+        padding: 10px; /* Reduced padding for mobile */
+        font-size: 14px; /* Smaller font size */
+    }
+    
+    #post-form textarea {
+    width: calc(220px); /* Full width of the flex container */
+    height: 20px;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 16px;
+    background-color: #f9f9f9;
+    color: #444;
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+    resize: none;
+}
+//* Mobile Styles */
+@media (max-width: 768px) {
+    .navbar .icons {
+        flex-direction: column; /* Stack icons vertically */
+        align-items: flex-start; /* Align to the start of the container */
+        margin-top: 10px; /* Add some space on top */
+    }
+
+    .navbar .chat-icon,
+    .navbar #notifications-button,
+    .navbar .user-profile {
+        margin-bottom: 10px; /* Space between icons */
+    }
+
+    /* Ensure the friends list is responsive */
+    .friend-list-container {
+        position: absolute;
+        top: 60px; /* Adjust as needed */
+        right: 10px; /* Adjust as needed */
+        background-color: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        width: 200px; /* Adjust width as needed */
+        z-index: 1000;
+    }
+
+    .friend-list-container h3 {
+        margin: 0;
+        padding: 10px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .friend-list-container ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .friend-list-container .friend-item {
+        padding: 10px;
+        cursor: pointer;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .friend-list-container .friend-item:hover {
+        background-color: #f9f9f9;
+    }
+}
+}
+/* Mobile Notification Dropdown */
+@media only screen and (max-width: 600px) {
+    #notifications-dropdown {
+        width: 100%; /* Full width on mobile */
+        max-height: 300px; /* Adjust max height for mobile */
+    }
+
+    .notification-card {
+        padding: 10px; /* Reduced padding for mobile */
+        font-size: 14px; /* Smaller font size */
+    }
+
+    .notification-actions {
+        flex-direction: column; /* Stack action buttons vertically */
+        gap: 8px; /* Reduced gap */
+    }
+
+    .action-button {
+        font-size: 12px; /* Smaller font size */
+        padding: 6px 12px; /* Adjust padding */
+    }
+}
+
+/* Style for Like Button */
+.like-button {
+    background-color: transparent;
+    border: none;
+    color: #007bff; /* Blue color for the like button text */
+    font-size: 16px; /* Adjust font size as needed */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: color 0.3s, transform 0.3s; /* Smooth transition for color and transform effects */
+    padding: 5px 10px; /* Padding around the button */
+}
+
+.like-button:hover {
+    color: #0056b3; /* Darker blue color on hover */
+    text-decoration: none;
+    transform: scale(1.1); /* Slightly enlarge button on hover */
+}
+
+.like-button:focus {
+    outline: none;
+}
+
+/* Style for Like Icon */
+.like-icon {
+    margin-right: 8px; /* Space between the icon and the like count */
+    font-size: 20px; /* Size of the like icon */
+    transition: color 0.3s; /* Smooth transition for icon color */
+}
+
+/* Style for Like Count */
+.like-count {
+    margin-right: 5px; /* Space between the like count and the text */
+    font-weight: bold; /* Make the like count bold */
+}
+
+/* Optional: Add some padding to the card-body to make space for the button */
+.card-body {
+    padding: 20px;
+}
+
+
+
+
+
+
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 15px;
+    }
+
+    .navbar .nav-links {
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+    }
+
+    .navbar .search-container {
+        width: 100%;
+        margin: 10px 0;
+    }
+
+    .navbar .search-container input {
+        width: calc(100% - 40px);
+    }
+
+    #notifications-dropdown {
+        width: 100%;
+        max-height: 300px;
+    }
+
+    #post-form {
+        padding: 15px;
+    }
+
+    #post-form textarea {
+        font-size: 14px;
+    }
+
+    #post-form button {
+        font-size: 14px;
+    }
+
+    .card {
+        margin: 10px;
+    }
+
+    .card-title {
+        font-size: 18px;
+    }
+
+    .card-text {
+        font-size: 14px;
+    }
+
+    form[action="/create-comment"] input {
+        font-size: 12px;
+    }
+
+    form[action="/create-comment"] button {
+        font-size: 12px;
+        padding: 8px 14px;
+    }
+}
+ 
+    </style>
+</head>
+<body>
+    <div class="navbar">
+    <div class="brand">Algolizen</div>
+    <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/about">About</a>
+        <a href="/services">Services</a>
+        <a href="/contact">Contact</a>
+        <li class="nav-item">
+            <a class="nav-link" href="/profile/<%= userId %>">My Profile</a>
+        </li>
+    </div>
+    <div class="search-container">
+        <form id="search-form" action="/search" method="get">
+            <input type="text" name="query" placeholder="Search..." required>
+            <i class="fas fa-search" onclick="document.getElementById('search-form').submit();"></i>
+        </form>
+    </div>
+    <div class="icons">
+        <!-- Chat Icon -->
+        <button id="chat-icon" class="chat-icon">
+            <i class="fas fa-comments"></i>
+        </button>
+
+        <!-- Friends Icon -->
+        <a href="/friends" id="friends-icon" class="chat-icon">
+            <i class="fas fa-user-friends"></i>
+        </a>
+
+        <!-- Friends List Container (initially hidden) -->
+        <div id="friend-list-container" class="friend-list-container" style="display: none;">
+            <h3>Select a Friend to Chat</h3>
+            <ul id="friend-list">
+                <% friends.forEach(friend => { %>
+                    <li class="friend-item" data-friend-id="<%= friend.id %>">
+                        <%= friend.name %>
+                    </li>
+                <% }); %>
+            </ul>
+        </div>
+
+        <button id="notifications-button">
+            <i class="fas fa-bell"></i>
+            <span id="notifications-badge">0</span>
+        </button>
+        <div id="notifications-dropdown" class="dropdown-content">
+            <!-- Notifications will be dynamically loaded here -->
+        </div>
+        
+        <div class="user-profile">
+            <img src="<%= profilePhoto || 'default-profile.png' %>" alt="User Profile" id="user-profile-img" data-user-id="<%= userId %>">
+            <div class="user-dropdown">
+                <a href="#" id="profile-link">Profile</a>
+                <a href="#" id="profile-link">Settings</a>
+                <a href="#" id="logout-link">Logout</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+       
+<main class="container mt-5 pt-5">
+  <!-- Create a Post -->
+  <section id="create-post" class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-8 col-md-10">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <form id="post-form" enctype="multipart/form-data">
+              <div class="form-group d-flex align-items-start">
+                <div class="profile-photo-container mr-3">
+                  <img src="<%= profilePhoto || '/images/default-profile.png' %>" alt="Profile Photo" class="profile-photo">
+                </div>
+                <div class="flex-grow-1">
+                  <textarea name="content" class="form-control" rows="4" placeholder="What's on your mind?" required></textarea>
+                  <div class="media-upload-container mt-3">
+                    <input type="file" name="media" class="form-control-file" accept="image/*,video/*" id="media-input">
+                    <label for="media-input" class="media-upload-icon">
+                      <i class="fa fa-file-image"></i> <span>or</span> <i class="fa fa-file-video"></i>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="media-preview-container mt-3">
+                <img id="image-preview" src="#" alt="Image Preview" class="media-preview d-none">
+                <video id="video-preview" controls class="media-preview d-none">
+                  <source src="#" type="video/mp4">
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+              <button type="submit" class="btn btn-primary mt-4">Post</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+
+<!-- Include this script for AJAX functionality -->
+<script>
+  document.getElementById('post-form').addEventListener('submit', function(e) {
+    e.preventDefault(); // Prevent the form from submitting the traditional way
+
+    const formData = new FormData(this);
+
+    fetch('/create-post', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Clear the form fields after submission
+        this.reset();
+
+        // Create the new post element dynamically
+        const newPost = document.createElement('div');
+        newPost.className = 'card mb-3';
+        newPost.innerHTML = `
+          <div class="card-body">
+            <div class="post-header d-flex align-items-center mb-3">
+              <a href="/profile/${data.post.authorId}">
+                <img src="<%= profilePhoto || '/images/default-profile.png' %>" alt="Profile Photo" class="profile-photo-sm mr-3">
+              </a>
+              <h5 class="card-title mb-0">You</h5>
+            </div>
+            <p class="card-text">${data.post.content}</p>
+            ${data.post.image ? `<img src="/uploads/${data.post.image}" alt="Post Image" class="post-image">` : ''}
+            <small class="timestamp">just now</small>
+          </div>
+        `;
+
+        // Prepend the new post to the posts container
+        document.getElementById('posts').prepend(newPost);
+      } else {
+        alert(data.message); // Handle errors by showing an alert
+      }
+    })
+    .catch(error => console.error('Error:', error));
+  });
+</script>
+
+<section id="friend-suggestions" class="container mb-4">
+  <% if (suggestions.length > 0) { %>
+    <h2 class="mb-4" style="text-align: center;">Friend Suggestions</h2>
+    <div class="suggestions-container">
+      <% suggestions.forEach(suggestion => { %>
+        <div class="suggestion-card">
+          <a href="/profile/<%= suggestion.id %>">
+            <img src="<%= suggestion.profile_photo || '/images/default-profile.png' %>" class="profile-img" alt="<%= suggestion.name %>">
+          </a>
+          <div class="suggestion-info">
+            <h5 class="suggestion-name"><%= suggestion.name %></h5>
+            <p class="suggestion-email"><%= suggestion.email %></p>
+            <p class="suggestion-mutual-friends">
+              <%= suggestion.mutual_friends %> mutual friend<%= suggestion.mutual_friends !== 1 ? 's' : '' %>
+            </p>
+            <form action="/send-friend-request" method="post">
+              <input type="hidden" name="receiverId" value="<%= suggestion.id %>">
+              <button type="submit" class="btn btn-primary">Send Friend Request</button>
+            </form>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } else { %>
+    <p class="text-muted">No suggestions available.</p>
+  <% } %>
+</section>
+
+<!-- Chat Head Avatar -->
+<div id="chat-head-avatar" class="chat-head-avatar">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7XneMGjOdupGjZFesW1XmNgwrjAnFJXLi2qMMRr6oFsNEhC6IOPhVPgUGJjyq88HU9tI&usqp=CAU" alt="Chat Avatar" />
+</div>
+
+<!-- Chat Container -->
+<div id="chat-container" class="chat-container">
+    <div class="chat-header">
+        <h3>AI Girlfriend Chat</h3>
+        <button id="close-chat" class="close-chat">×</button>
+    </div>
+    <div id="chat-messages" class="chat-messages">
+    </div>
+    <!-- Typing indicator -->
+        <div id="typing-indicator" class="typing-indicator" style="display: none;">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    <div class="chat-input-container">
+        <input id="chat-input" type="text" placeholder="Type a message..." />
+        <button id="send-chat" class="send-chat">Send</button>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const chatHeadAvatar = document.getElementById('chat-head-avatar');
+    const chatContainer = document.getElementById('chat-container');
+    const closeChat = document.getElementById('close-chat');
+    const sendChat = document.getElementById('send-chat');
+    const chatInput = document.getElementById('chat-input');
+    const chatMessages = document.getElementById('chat-messages');
+    const typingIndicator = document.getElementById('typing-indicator');
+
+    // Initial state: chat container is hidden
+    chatContainer.style.display = 'none';
+
+    // Toggle chat container visibility when chat head avatar is clicked
+    chatHeadAvatar.addEventListener('click', function () {
+        chatContainer.style.display = chatContainer.style.display === 'none' ? 'flex' : 'none';
+    });
+
+    // Close chat container when close button is clicked
+    closeChat.addEventListener('click', function () {
+        chatContainer.style.display = 'none';
+    });
+
+    // Send message functionality
+    sendChat.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') sendMessage();
+    });
+
+    function sendMessage() {
+        const message = chatInput.value.trim();
+        if (message === '') return;
+
+        // Display user's message
+        const userMessageElement = document.createElement('div');
+        userMessageElement.classList.add('chat-message');
+        userMessageElement.innerHTML = `
+            <div class="message-content">
+                <span class="user">You:</span> ${message}
+            </div>`;
+        chatMessages.appendChild(userMessageElement);
+        chatInput.value = '';
+
+        // Show typing indicator
+        typingIndicator.style.display = 'flex';
+
+        // Simulate a delay for AI's response (e.g., 1.5 to 3 seconds)
+        setTimeout(() => {
+            // Call the API to get the AI's response
+            fetch('http://localhost:5000/chatai', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer 12345678',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide typing indicator
+                typingIndicator.style.display = 'none';
+
+                // Display AI's response
+                const aiMessageElement = document.createElement('div');
+                aiMessageElement.classList.add('chat-message');
+                aiMessageElement.innerHTML = `
+                    <div class="message-avatar">
+                        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7XneMGjOdupGjZFesW1XmNgwrjAnFJXLi2qMMRr6oFsNEhC6IOPhVPgUGJjyq88HU9tI&usqp=CAU" alt="AI Avatar" />
+                    </div>
+                    <div class="message-content">
+                        <span class="ai">AI Girlfriend:</span> ${data.response}
+                    </div>`;
+                chatMessages.appendChild(aiMessageElement);
+                chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to the bottom
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Hide typing indicator in case of error
+                typingIndicator.style.display = 'none';
+            });
+        }, getRandomDelay());
+    }
+
+    function getRandomDelay() {
+        // Generate a random delay between 1.5 to 3 seconds
+        return Math.floor(Math.random() * (3000 - 1500 + 1)) + 1500;
+    }
+});
+
+</script>
+
+ 
+
+<!-- Post Display -->
+<section id="posts" class="mb-4">
+  <% if (posts.length > 0) { %>
+    <% posts.forEach(post => { %>
+      <div class="card mb-3">
+        <div class="card-body">
+          <div class="post-header d-flex align-items-center mb-3">
+            <a href="/profile/<%= post.authorId %>">
+              <img src="<%= post.author_photo || '/images/default-profile.png' %>" alt="<%= post.author %> profile photo" class="profile-photo-sm mr-3">
+            </a>
+            <h5 class="card-title mb-0"><%= post.author %></h5>
+          </div>
+          <p class="card-text <%= post.content.length < 100 ? 'short-content' : 'long-content' %>">
+            <%= post.content %>
+            <small class="timestamp"><%= post.timestamp %></small>
+          </p>
+
+          <% if (post.image) { %>
+            <img src="/uploads/<%= post.image %>" alt="Post Image" class="post-image">
+          <% } %>
+
+          <% if (post.video) { %>
+            <video controls class="post-video">
+              <source src="/uploads/<%= post.video %>" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          <% } %>
+
+         <!-- Like Button -->
+         <button class="btn btn-link like-button" data-post-id="<%= post.id %>">
+            <i class="fas fa-thumbs-up like-icon"></i>
+            <span class="like-count"><%= post.like_count %></span> Like
+         </button>
+
+          <!-- View Comments Button -->
+          <button class="btn btn-link view-comments-btn" onclick="toggleComments(this)">View Comments</button>
+
+          <!-- Display Comments (Initially Hidden) -->
+          <div class="comments" style="display: none;">
+            <% postComments.filter(comment => comment.post_id === post.id).forEach(comment => { %>
+              <div class="comment mb-2">
+                <strong><%= comment.author %>:</strong> <%= comment.content %>
+                <small class="text-muted"><%= comment.timestamp %></small>
+              </div>
+            <% }) %>
+          </div>
+
+          <!-- Add a Comment -->
+          <form action="/create-comment" method="post" class="comment-form">
+            <input type="hidden" name="post_id" value="<%= post.id %>">
+            <div class="form-group">
+              <input type="text" name="content" class="form-control" placeholder="Add a comment..." required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">Comment</button>
+          </form>
+        </div>
+      </div>
+    <% }) %>
+  <% } else { %>
+    <p>No posts available. Start by creating a new post!</p>
+  <% } %>
+</section>
+
+  </main>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="dashboard.js"></script>
+    <!-- Load jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+$(document).ready(function () {
+    // Like/Unlike Button Functionality
+    function handleLikeButtonClick() {
+        $('.like-button').click(function () {
+            const postId = $(this).data('post-id');
+            const likeCountSpan = $(this).find('.like-count');
+            const button = $(this);
+
+            $.ajax({
+                url: '/like-post',
+                method: 'POST',
+                data: { post_id: postId },
+                success: function (data) {
+                    if (data.success) {
+                        likeCountSpan.text(data.like_count);
+                        button.html(`
+                            <i class="fas fa-thumbs-up like-icon"></i>
+                            <span class="like-count">${data.like_count}</span> ${data.action === 'like' ? 'Like' : 'Unlike'}
+                        `);
+                    } else {
+                        alert(data.message);
+                    }
+                },
+                error: function (xhr) {
+                    alert('An error occurred: ' + xhr.responseText);
+                }
+            });
+        });
+    }
+
+    // User Profile Dropdown and Logout
+    function handleUserProfile() {
+        const userId = $('#user-profile-img').data('user-id');
+
+        $('.user-profile img').click(function () {
+            $('.user-dropdown').toggleClass('show');
+        });
+
+        $('#logout-link').click(function (e) {
+            e.preventDefault();
+            $.get('/logout', function () {
+                window.location.href = '/';
+            }).fail(handleAjaxError);
+        });
+
+        $('#profile-link').click(function (e) {
+            e.preventDefault();
+            window.location.href = `/profile/${userId}`;
+        });
+    }
+    
+    // Comment Handling
+    function handleComments() {
+        document.querySelectorAll('.card-text').forEach(postText => {
+            const textLength = postText.innerText.length;
+            postText.classList.add(textLength > 200 ? 'long-content' : 'short-content');
+        });
+
+        document.querySelectorAll('.comment-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const formData = new FormData(this);
+                fetch('/create-comment', {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    body: new URLSearchParams(formData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const commentsSection = this.previousElementSibling;
+                        const newComment = document.createElement('div');
+                        newComment.className = 'comment mb-2';
+                        newComment.innerHTML = `<strong>You:</strong> ${formData.get('content')}<small class="text-muted"> just now</small>`;
+                        commentsSection.appendChild(newComment);
+
+                        if (commentsSection.style.display === 'none' || commentsSection.style.display === '') {
+                            commentsSection.style.display = 'block';
+                            this.previousElementSibling.previousElementSibling.textContent = 'Hide Comments';
+                        }
+
+                        this.querySelector('.form-control').value = '';
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        });
+
+        document.querySelectorAll('.view-comments-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const commentsSection = this.nextElementSibling;
+                const isHidden = commentsSection.style.display === 'none' || commentsSection.style.display === '';
+
+                commentsSection.style.display = isHidden ? 'block' : 'none';
+                this.textContent = isHidden ? 'Hide Comments' : 'View Comments';
+            });
+
+            const commentsSection = button.nextElementSibling;
+            button.textContent = commentsSection.style.display === 'none' || commentsSection.style.display === '' ? 'View Comments' : 'Hide Comments';
+        });
+    }
+
+    // Friend List and Chat
+    function handleFriendList() {
+        document.getElementById('chat-icon').addEventListener('click', function(event) {
+            event.stopPropagation();
+            const friendListContainer = document.getElementById('friend-list-container');
+            friendListContainer.style.display = friendListContainer.style.display === 'none' ? 'block' : 'none';
+        });
+
+        document.querySelectorAll('.friend-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const friendId = this.dataset.friendId;
+                window.location.href = `/chat/${friendId}`;
+            });
+        });
+
+        document.addEventListener('click', function(event) {
+            const friendListContainer = document.getElementById('friend-list-container');
+            const chatIcon = document.getElementById('chat-icon');
+
+            if (!friendListContainer.contains(event.target) && event.target !== chatIcon) {
+                friendListContainer.style.display = 'none';
+            }
+        });
+    }
+
+    // Initialize all functionalities
+    function init() {
+        handleLikeButtonClick();
+        handleUserProfile();
+        handleNotifications();
+        handleComments();
+        handleFriendList();
+        handleImageUpload();
+        fetchNotifications();
+    }
+
+    init();
+});
+</script>
+<script>
+document.getElementById('media-input').addEventListener('change', function(event) {
+  const file = event.target.files[0];
+  const mediaPreviewContainer = document.querySelector('.media-preview-container');
+  const imagePreview = document.getElementById('image-preview');
+  const videoPreview = document.getElementById('video-preview');
+  const videoSource = videoPreview.querySelector('source');
+
+  if (file) {
+    mediaPreviewContainer.style.display = 'block'; // Show the preview container
+
+    if (file.type.startsWith('image/')) {
+      imagePreview.src = URL.createObjectURL(file);
+      imagePreview.style.display = 'block';
+      videoPreview.style.display = 'none';
+    } else if (file.type.startsWith('video/')) {
+      videoSource.src = URL.createObjectURL(file);
+      videoPreview.load(); // Load the video
+      videoPreview.style.display = 'block';
+      imagePreview.style.display = 'none';
+    }
+  } else {
+    mediaPreviewContainer.style.display = 'none'; // Hide the preview container if no file is selected
+  }
+});
+</script>
+<script>
+        $(document).ready(function () {
+            const userId = $('#user-profile-img').data('user-id');
+
+            $('.user-profile img').click(function () {
+                $('.user-dropdown').toggleClass('show');
+            });
+
+            $('#logout-link').click(function (e) {
+                e.preventDefault();
+                $.get('/logout', function () {
+                    window.location.href = '/';
+                }).fail(function () {
+                    alert('Failed to log out');
+                });
+            });
+
+            $('#profile-link').click(function (e) {
+                e.preventDefault();
+                window.location.href = `/profile/${userId}`;
+            });
+
+            function fetchNotifications() {
+	    $.ajax({
+		url: '/notifications',
+		method: 'GET',
+		success: function (data) {
+		    $('#notifications-dropdown').empty();
+		    $('#notifications-badge').text(data.friendRequests.length);
+
+		    if (data.friendRequests.length === 0) {
+		        $('#notifications-dropdown').append('<div class="no-notifications">No notifications</div>');
+		    } else {
+		        data.friendRequests.forEach(function (request) {
+		            $('#notifications-dropdown').append(`
+		                <div class="notification-card">
+		                    <a href="/profile/${request.sender_id}" class="notification-link">
+		                        <img src="${request.sender_photo || '/images/default-profile.png'}" alt="${request.sender_name}'s photo" class="user-profile-img">
+		                    </a>
+		                    <div class="notification-content">
+		                        <div class="notification-header">${request.sender_name} sent you a friend request</div>
+		                        <div class="notification-actions">
+		                            <button class="action-button accept-button" data-id="${request.id}">Accept</button>
+		                            <button class="action-button decline-button" data-id="${request.id}">Decline</button>
+		                        </div>
+		                    </div>
+		                </div>
+		            `);
+		        });
+		    }
+		},
+		error: function () {
+		    alert('Failed to load notifications');
+		}
+	    });
+	}
+
+
+
+            $('#notifications-button').click(function () {
+                $('#notifications-dropdown').toggleClass('show');
+            });
+
+            $(document).on('click', '.accept-button', function () {
+	    const requestId = $(this).data('id');
+	    $.post(`/accept-friend-request`, { requestId: requestId })
+		.done(function () {
+		    alert('Friend request accepted');
+		    fetchNotifications();
+		})
+		.fail(function (xhr) {
+		    alert('Failed to accept friend request: ' + xhr.responseText);
+		});
+	});
+
+	$(document).on('click', '.decline-button', function () {
+	    const requestId = $(this).data('id');
+	    $.post(`/decline-friend-request`, { requestId: requestId })
+		.done(function () {
+		    alert('Friend request declined');
+		    fetchNotifications();
+		})
+		.fail(function (xhr) {
+		    alert('Failed to decline friend request: ' + xhr.responseText);
+		});
+	});
+
+
+            $(document).click(function (e) {
+                if (!$(e.target).closest('.user-profile, .user-dropdown, #notifications-button').length) {
+                    $('.user-dropdown').removeClass('show');
+                    $('#notifications-dropdown').removeClass('show');
+                }
+            });
+
+            // Initialize notifications
+            fetchNotifications();
+        });
+    </script>
+
+</body>
+</html>

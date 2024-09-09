@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= user.name %>'s Profile</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .profile-header {
+      display: flex;
+      align-items: center;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 20px;
+    }
+    .profile-picture {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background-size: cover;
+      background-position: center;
+      background-image: url('<%= user.profilePicture ? "/uploads/" + user.profilePicture : "/default-profile-picture.jpg" %>');
+      margin-right: 20px;
+    }
+    .profile-details {
+      flex: 1;
+    }
+    .profile-details h1 {
+      margin: 0;
+    }
+    .bio {
+      margin-top: 10px;
+      font-style: italic;
+    }
+    .action-buttons {
+      margin-top: 20px;
+    }
+    .action-buttons button, .action-buttons a {
+      display: inline-block;
+      padding: 10px 20px;
+      font-size: 16px;
+      color: #007bff;
+      text-decoration: none;
+      border: 1px solid #007bff;
+      border-radius: 5px;
+      background-color: #fff;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    .action-buttons button:hover, .action-buttons a:hover {
+      background-color: #007bff;
+      color: #fff;
+    }
+    .friend-request-form {
+      display: flex;
+      align-items: center;
+      margin-top: 10px;
+    }
+    .friend-request-form input[type="submit"] {
+      margin-left: 10px;
+      background-color: #28a745;
+      color: #fff;
+      border-color: #28a745;
+    }
+    .friend-request-form input[type="submit"]:hover {
+      background-color: #218838;
+    }
+    .friends-list {
+      margin-top: 20px;
+    }
+    .friends-list h2 {
+      margin: 0;
+    }
+    .friends-list ul {
+      list-style: none;
+      padding: 0;
+    }
+    .friends-list li {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .friend-picture {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+    .friend-name {
+      font-size: 16px;
+      text-decoration: none;
+      color: #007bff;
+    }
+    .friend-name:hover {
+      text-decoration: underline;
+    }
+    .update-profile-form {
+      margin-top: 20px;
+    }
+    .update-profile-form h2 {
+      margin: 0 0 10px;
+    }
+    .update-profile-form label {
+      display: block;
+      margin: 5px 0;
+    }
+    .update-profile-form textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .update-profile-form input[type="file"] {
+      margin-top: 5px;
+    }
+    .update-profile-form button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      color: #fff;
+      background-color: #007bff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .update-profile-form button:hover {
+      background-color: #0056b3;
+    }
+    @media (max-width: 600px) {
+      .profile-header {
+        flex-direction: column;
+        text-align: center;
+      }
+      .profile-picture {
+        margin-bottom: 20px;
+      }
+      .profile-details {
+        margin-top: 20px;
+      }
+      .friends-list ul {
+        padding: 0;
+      }
+      .friends-list li {
+        display: block;
+        text-align: center;
+        margin-bottom: 10px;
+      }
+      .friend-picture {
+        margin: 0 auto;
+      }
+      .action-buttons button, .action-buttons a {
+        display: block;
+        margin: 10px auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="profile-header">
+      <div class="profile-picture"></div>
+      <div class="profile-details">
+        <h1><%= user.name %>'s Profile</h1>
+        <p>Email: <%= user.email %></p>
+        <p class="bio"><%= user.bio || 'No bio available.' %></p>
+      </div>
+    </div>
+    
+    <% if (user.id === loggedInUserId) { %>
+      <!-- Update Profile Form -->
+      <div class="update-profile-form">
+        <h2>Update Profile</h2>
+        <form action="/update-profile" method="POST" enctype="multipart/form-data">
+          <div>
+            <label for="profile_picture">Profile Picture:</label>
+            <input type="file" name="profile_picture" id="profile_picture">
+            <!-- Profile Picture Display -->
+            <div class="profile-picture" style="background-image: url('/uploads/1.png');"></div>
+
+
+            <div class="profile-picture" style="background-image: url('<%= user.profilePicture ? '/uploads/' + user.profilePicture : '/default-profile-picture.jpg' %>');"></div>
+          </div>
+          <div>
+            <label for="bio">Bio:</label>
+            <textarea name="bio" id="bio" rows="4"><%= user.bio || '' %></textarea>
+          </div>
+          <button type="submit">Save Changes</button>
+        </form>
+      </div>
+    <% } %>
+    
+    <div class="action-buttons">
+      <% if (isFriend || user.id === loggedInUserId) { %>
+        <a href="/chat/<%= user.id %>">Send Message</a>
+      <% } else { %>
+        <div class="friend-request-form">
+          <form action="/send-friend-request" method="POST">
+            <input type="hidden" name="receiverId" value="<%= user.id %>">
+            <button type="submit">Add Friend</button>
+          </form>
+        </div>
+      <% } %>
+    </div>
+    <% if (isFriend) { %>
+      <p>You are friends with this user.</p>
+    <% } else { %>
+      <p>You are not friends with this user.</p>
+    <% } %>
+
+    <div class="friends-list">
+      <h2>Friends</h2>
+      <ul>
+        <% friends.forEach(friend => { %>
+          <li>
+            <a href="/profile/<%= friend.id %>" class="friend-name">
+              <img src="<%= friend.profilePicture ? '/uploads/' + friend.profilePicture : '/default-profile-picture.jpg' %>" alt="<%= friend.name %>'s Profile Picture" class="friend-picture">
+              <%= friend.name %>
+            </a>
+          </li>
+        <% }) %>
+      </ul>
+    </div>
+    
+    <a href="/dashboard">Back to Home</a>
+  </div>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Friends</title>
+</head>
+<body>
+  <h1>Friends of <%= username %></h1>
+
+  <h2>Friend Requests</h2>
+  <ul>
+    <% requests.forEach(request => { %>
+      <li><%= request.name %> (<%= request.email %>)</li>
+    <% }) %>
+  </ul>
+
+  <h2>Friends</h2>
+  <ul>
+    <% friends.forEach(friend => { %>
+      <li><%= friend.name %> (<%= friend.email %>)</li>
+    <% }) %>
+  </ul>
+
+  <h2>Friend Suggestions</h2>
+  <ul>
+    <% suggestions.forEach(suggestion => { %>
+      <li>
+        <span><%= suggestion.name %> (<%= suggestion.email %>) - <%= suggestion.mutual_friends %> mutual friends</span>
+        <form action="/send-friend-request" method="POST" style="display: inline;">
+          <input type="hidden" name="receiverId" value="<%= suggestion.id %>">
+          <button type="submit" class="button">Send Request</button>
+        </form>
+      </li>
+    <% }) %>
+  </ul>
+</body>
+</html>
