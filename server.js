@@ -269,7 +269,7 @@ app.post('/register', [
         service: 'gmail',
         auth: {
           user: 'shaykhul2004@gmail.com',
-          pass: 'ulee sbdr sxws amlc'
+          pass: 'qmxh onpx dhiy kuyp'
         }
       });
 
@@ -1136,16 +1136,73 @@ app.get('/friends', isAuthenticated, async (req, res) => {
   const userId = req.session.userId;
 
   try {
-    const suggestions = await getAdvancedFriendSuggestions(userId);
+    // Fetch friend requests
+    const requests = await new Promise((resolve, reject) => {
+      db.all(
+        `SELECT friend_requests.id, users.name, users.email
+         FROM friend_requests
+         JOIN users ON friend_requests.sender_id = users.id
+         WHERE friend_requests.receiver_id = ? AND friend_requests.status = 'pending'`,
+        [userId],
+        (err, rows) => (err ? reject(err) : resolve(rows))
+      );
+    });
+
+    // Fetch friends
+    const friends = await new Promise((resolve, reject) => {
+      db.all(
+        `SELECT users.id, users.name, users.email, users.profile_photo
+         FROM friends
+         JOIN users ON friends.friend_id = users.id
+         WHERE friends.user_id = ?`,
+        [userId],
+        (err, rows) => (err ? reject(err) : resolve(rows))
+      );
+    });
+
+    // Fetch friend suggestions
+    const suggestions = await new Promise((resolve, reject) => {
+      db.all(
+        `WITH mutuals AS (
+          SELECT
+            u.id,
+            u.name,
+            u.email,
+            u.profile_photo,
+            COUNT(DISTINCT f2.friend_id) AS mutual_friends
+          FROM users u
+          JOIN friends f1 ON f1.friend_id = u.id
+          LEFT JOIN friends f2 ON f2.friend_id = f1.user_id
+          WHERE u.id != ? 
+            AND u.id NOT IN (
+              SELECT friend_id FROM friends WHERE user_id = ?
+            ) 
+            AND u.id NOT IN (
+              SELECT receiver_id FROM friend_requests WHERE sender_id = ?
+            )
+            AND u.id NOT IN (
+              SELECT sender_id FROM friend_requests WHERE receiver_id = ?
+            )
+          GROUP BY u.id
+        )
+        SELECT * FROM mutuals
+        ORDER BY mutual_friends DESC
+        LIMIT 10`,
+        [userId, userId, userId, userId],
+        (err, rows) => (err ? reject(err) : resolve(rows))
+      );
+    });
 
     res.render('friends', {
       username: req.session.username,
       userId: userId,
-      suggestions
+      requests,    // Pass the requests variable
+      friends,     // Pass the friends variable
+      suggestions, // Pass the suggestions variable
     });
   } catch (error) {
-    console.error("Error fetching friend suggestions:", error);
-    res.status(500).render('error', { message: 'Failed to retrieve friend suggestions' });
+    console.error("Error fetching friends, friend requests, or suggestions:", error);
+    res.status(500).render('error', { message: 'Failed to retrieve data' });
   }
 });
 
