@@ -18,7 +18,7 @@ const axios = require('axios');
 // Configure multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, '/media/shaykhul/android/uploads/');
+    cb(null, '/home/shaykhul/Downloads/Connect/uploads/');
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
@@ -53,7 +53,7 @@ const videoStorage = multer.diskStorage({
 const uploadVideo = multer({ storage: videoStorage });
 
 const app = express();
-app.use('/uploads', express.static('/media/shaykhul/android/uploads'));
+app.use('/uploads', express.static('/home/shaykhul/Downloads/Connect/uploads/'));
 const server = http.createServer(app);
 const io = socketIo(server);
 
@@ -146,6 +146,39 @@ db.run(`CREATE TABLE IF NOT EXISTS likes (
     FOREIGN KEY(user_id) REFERENCES users(id)
 )`);
 
+// Ensure the 'profile_photo' column exists in the 'users' table
+db.run(`ALTER TABLE users ADD COLUMN profile_photo TEXT`, (err) => {
+    if (err && !err.message.includes('duplicate column name')) {
+        console.error("Error adding 'profile_photo' column:", err.message);
+    } else {
+        console.log("'profile_photo' column added successfully or already exists.");
+    }
+});
+
+// Ensure the 'video' column exists in the 'posts' table
+db.run(`ALTER TABLE posts ADD COLUMN video TEXT`, (err) => {
+  if (err && !err.message.includes('duplicate column name')) {
+      console.error("Error adding 'video' column to posts table:", err.message);
+  } else {
+      console.log("'video' column added successfully or already exists in posts table.");
+  }
+});
+
+// Create reels table
+db.run(`CREATE TABLE IF NOT EXISTS reels (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER,
+  video TEXT NOT NULL,
+  caption TEXT,
+  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY(user_id) REFERENCES users(id)
+)`, (err) => {
+  if (err) {
+      console.error("Error creating reels table:", err.message);
+  } else {
+      console.log("Reels table created successfully or already exists.");
+  }
+});
 
 const winston = require('winston');
 
@@ -1088,85 +1121,16 @@ app.get('/friends', isAuthenticated, async (req, res) => {
   const userId = req.session.userId;
 
   try {
-    // Retrieve friend requests
-    const requests = await new Promise((resolve, reject) => {
-      db.all(`
-        SELECT friend_requests.id, users.name, users.email
-        FROM friend_requests
-        JOIN users ON friend_requests.sender_id = users.id
-        WHERE friend_requests.receiver_id = ? AND friend_requests.status = ?`,
-        [userId, 'pending'],
-        (err, rows) => err ? reject(err) : resolve(rows)
-      );
-    });
-
-    // Retrieve friends
-    const friends = await new Promise((resolve, reject) => {
-      db.all(`
-        SELECT users.id, users.name, users.email
-        FROM friends
-        JOIN users ON friends.friend_id = users.id
-        WHERE friends.user_id = ?`,
-        [userId],
-        (err, rows) => err ? reject(err) : resolve(rows)
-      );
-    });
-
-    // Retrieve friend suggestions based on mutual friends
-    const suggestions = await new Promise((resolve, reject) => {
-  db.all(`
-    WITH current_friends AS (
-      SELECT friend_id 
-      FROM friends 
-      WHERE user_id = ?
-    ),
-    mutuals AS (
-      SELECT 
-        u.id,
-        u.name,
-        u.email,
-        COUNT(DISTINCT f1.friend_id) AS mutual_friends
-      FROM users u
-      JOIN friends f1 ON f1.user_id = u.id
-      WHERE u.id != ?
-        AND u.id NOT IN (
-          SELECT friend_id 
-          FROM friends 
-          WHERE user_id = ?
-        )
-        AND u.id NOT IN (
-          SELECT receiver_id 
-          FROM friend_requests 
-          WHERE sender_id = ?
-        )
-        AND u.id NOT IN (
-          SELECT sender_id 
-          FROM friend_requests 
-          WHERE receiver_id = ?
-        )
-        AND f1.friend_id IN (
-          SELECT friend_id FROM current_friends
-        )
-      GROUP BY u.id
-    )
-    SELECT * FROM mutuals
-    ORDER BY mutual_friends DESC
-    LIMIT 10`,
-    [userId, userId, userId, userId, userId],
-    (err, rows) => err ? reject(err) : resolve(rows)
-  );
-});
-
+    const suggestions = await getAdvancedFriendSuggestions(userId);
 
     res.render('friends', {
       username: req.session.username,
       userId: userId,
-      requests,
-      friends,
       suggestions
     });
   } catch (error) {
-    res.status(500).render('error', { message: 'Failed to retrieve data' });
+    console.error("Error fetching friend suggestions:", error);
+    res.status(500).render('error', { message: 'Failed to retrieve friend suggestions' });
   }
 });
 
@@ -1651,4 +1615,69 @@ app.use((err, req, res, next) => {
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on http://0.0.0.0:${PORT}`);
 });
+
+// Advanced friend suggestion logic
+const getAdvancedFriendSuggestions = async (userId) => {
+  return new Promise((resolve, reject) => {
+    db.all(`
+      WITH current_friends AS (
+        SELECT friend_id 
+        FROM friends 
+        WHERE user_id = ?
+      ),
+      mutuals AS (
+        SELECT 
+          u.id,
+          u.name,
+          u.email,
+          u.profile_photo,
+          COUNT(DISTINCT f1.friend_id) AS mutual_friends,
+          COUNT(DISTINCT p.id) AS shared_posts,
+          COUNT(DISTINCT l.id) AS shared_likes
+        FROM users u
+        LEFT JOIN friends f1 ON f1.user_id = u.id
+        LEFT JOIN posts p ON p.user_id = u.id
+        LEFT JOIN likes l ON l.user_id = u.id
+        WHERE u.id != ?
+          AND u.id NOT IN (
+            SELECT friend_id 
+            FROM friends 
+            WHERE user_id = ?
+          )
+          AND u.id NOT IN (
+            SELECT receiver_id 
+            FROM friend_requests 
+            WHERE sender_id = ?
+          )
+          AND u.id NOT IN (
+            SELECT sender_id 
+            FROM friend_requests 
+            WHERE receiver_id = ?
+          )
+          AND f1.friend_id IN (
+            SELECT friend_id FROM current_friends
+          )
+        GROUP BY u.id
+      )
+      SELECT 
+        mutuals.id,
+        mutuals.name,
+        mutuals.email,
+        mutuals.profile_photo,
+        mutuals.mutual_friends,
+        mutuals.shared_posts,
+        mutuals.shared_likes,
+        (mutuals.mutual_friends * 2 + mutuals.shared_posts + mutuals.shared_likes) AS score
+      FROM mutuals
+      ORDER BY score DESC
+      LIMIT 10
+    `, [userId, userId, userId, userId, userId], (err, rows) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(rows);
+      }
+    });
+  });
+};
 
