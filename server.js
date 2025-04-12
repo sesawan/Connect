@@ -197,11 +197,18 @@ logger.info('User registered, verification token generated');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());  // Handle JSON payloads
 
+const SQLiteStore = require('connect-sqlite3')(session);
+
 app.use(session({
+  store: new SQLiteStore({ db: 'sessions.sqlite' }),
   secret: 'your_secret_key',
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 24 * 60 * 60 * 1000 // Default: 1 day
+  }
 }));
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
@@ -376,7 +383,7 @@ app.post('/login', [
     return res.status(400).render('login', { errors: errors.array() });
   }
 
-  const { email, password } = req.body;
+  const { email, password, rememberMe } = req.body;
 
   db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
     if (err || !user) {
@@ -394,6 +401,14 @@ app.post('/login', [
 
     req.session.userId = user.id;
     req.session.username = user.name;
+
+    // Adjust session duration if "Remember Me" is checked
+    if (rememberMe) {
+      req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days
+    } else {
+      req.session.cookie.maxAge = 24 * 60 * 60 * 1000; // 1 day
+    }
+
     res.redirect('/dashboard');
   });
 });
