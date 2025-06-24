@@ -1,36 +1,193 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" >
 <head>
+  <meta charset="UTF-8" />
   <title>Friends</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </head>
-<body>
-  <h1>Friends of <%= username %></h1>
+<body class="bg-gray-100 text-gray-800" x-data="friendsApp()" @toast.window="showToast($event.detail.message)">
 
-  <h2>Friend Requests</h2>
-  <ul>
-    <% requests.forEach(request => { %>
-      <li><%= request.name %> (<%= request.email %>)</li>
-    <% }) %>
-  </ul>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-6">
 
-  <h2>Friends</h2>
-  <ul>
-    <% friends.forEach(friend => { %>
-      <li><%= friend.name %> (<%= friend.email %>)</li>
-    <% }) %>
-  </ul>
+    <!-- Toast -->
+    <div x-show="toastMessage"
+         x-transition
+         class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded shadow z-50"
+         x-text="toastMessage"
+         x-init="setTimeout(() => toastMessage = '', 3000)">
+    </div>
 
-  <h2>Friend Suggestions</h2>
-  <ul>
-    <% suggestions.forEach(suggestion => { %>
-      <li>
-        <span><%= suggestion.name %> (<%= suggestion.email %>) - <%= suggestion.mutual_friends %> mutual friends</span>
-        <form action="/send-friend-request" method="POST" style="display: inline;">
-          <input type="hidden" name="receiverId" value="<%= suggestion.id %>">
-          <button type="submit" class="button">Send Request</button>
-        </form>
-      </li>
-    <% }) %>
-  </ul>
+    <!-- Title -->
+    <h1 class="text-2xl sm:text-3xl font-bold mb-8 text-center sm:text-left">Friends of <%= username %></h1>
+
+    <!-- Friend Requests -->
+    <section class="mb-12">
+      <h2 class="text-xl sm:text-2xl font-semibold mb-4">Friend Requests</h2>
+      <template x-if="requests.length === 0">
+        <p class="text-gray-500 italic">You're all caught up—no friend requests.</p>
+      </template>
+      <div class="flex flex-col gap-4">
+        <template x-for="req in requests" :key="req.id">
+          <div class="bg-white p-4 rounded shadow flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+            <div>
+              <p class="font-medium text-base" x-text="req.name"></p>
+              <p class="text-sm text-gray-600" x-text="req.email"></p>
+            </div>
+            <div class="flex gap-2">
+              <button @click="acceptRequest(req.id)"
+                      class="w-full sm:w-auto px-3 py-2 text-sm bg-green-500 text-white rounded hover:bg-green-600">
+                Accept
+              </button>
+              <button @click="declineRequest(req.id)"
+                      class="w-full sm:w-auto px-3 py-2 text-sm bg-red-500 text-white rounded hover:bg-red-600">
+                Decline
+              </button>
+            </div>
+          </div>
+        </template>
+      </div>
+    </section>
+
+    <!-- Friends List -->
+    <section class="mb-12" x-data="{ showRemoveModal: false, friendToRemove: null }">
+      <h2 class="text-xl sm:text-2xl font-semibold mb-4">Your Friends</h2>
+      <template x-if="friends.length === 0">
+        <p class="text-gray-500 italic">No friends yet. Start connecting!</p>
+      </template>
+      <ul class="grid gap-4 sm:grid-cols-2" x-if="friends.length > 0">
+        <template x-for="friend in friends" :key="friend.id">
+          <li class="bg-white p-4 rounded shadow flex justify-between items-center">
+            <div>
+              <p class="font-medium" x-text="friend.name"></p>
+              <p class="text-sm text-gray-600" x-text="friend.email"></p>
+            </div>
+            <button
+              @click="friendToRemove = friend; showRemoveModal = true"
+              class="px-3 py-2 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+            >
+              Remove
+            </button>
+          </li>
+        </template>
+      </ul>
+
+      <!-- Remove Confirmation Modal -->
+      <div
+        x-show="showRemoveModal"
+        x-transition
+        style="background-color: rgba(0,0,0,0.5)"
+        class="fixed inset-0 flex items-center justify-center z-50"
+        role="dialog"
+        aria-modal="true"
+      >
+        <div
+          @click.away="showRemoveModal = false"
+          class="bg-white rounded shadow p-6 max-w-sm w-full"
+        >
+          <h3 class="text-lg font-semibold mb-4">Remove Friend</h3>
+          <p class="mb-6">Are you sure you want to remove <strong x-text="friendToRemove?.name"></strong> from your friends?</p>
+          <div class="flex justify-end gap-3">
+            <button @click="showRemoveModal = false" class="px-4 py-2 rounded border border-gray-300 hover:bg-gray-100">Cancel</button>
+            <button
+              @click="
+                fetch('/remove-friend', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ friendId: friendToRemove.id })
+                })
+                .then(res => res.json())
+                .then(data => {
+                  if (data.success) {
+                    friends = friends.filter(f => f.id !== friendToRemove.id);
+                    $dispatch('toast', { message: 'Friend removed successfully' });
+                  } else {
+                    $dispatch('toast', { message: data.message || 'Failed to remove friend' });
+                  }
+                  showRemoveModal = false;
+                })
+                .catch(() => {
+                  $dispatch('toast', { message: 'Error removing friend' });
+                  showRemoveModal = false;
+                })
+              "
+              class="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+            >
+              Remove
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Suggestions -->
+    <section>
+      <h2 class="text-xl sm:text-2xl font-semibold mb-4">Friend Suggestions</h2>
+      <template x-if="suggestions.length === 0">
+        <p class="text-gray-500 italic">No suggestions right now—check back later.</p>
+      </template>
+      <div class="flex flex-col gap-4">
+        <template x-for="s in suggestions" :key="s.id">
+          <div class="bg-white p-4 rounded shadow flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+            <div>
+              <p class="font-medium" x-text="s.name"></p>
+              <p class="text-sm text-gray-600" x-text="s.email"></p>
+              <p class="text-sm text-blue-500" x-text="s.mutual_friends + ' mutual friends'"></p>
+            </div>
+            <form @submit.prevent="sendRequest(s.id)" class="w-full sm:w-auto">
+              <button type="submit"
+                      class="w-full sm:w-auto px-3 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                      :disabled="s.sent">
+                <span x-show="!s.sent">Send Request</span>
+                <span x-show="s.sent" class="italic">Sent</span>
+              </button>
+            </form>
+          </div>
+        </template>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    function friendsApp() {
+      return {
+        requests: <%- JSON.stringify(requests) %>,
+        suggestions: <%- JSON.stringify(suggestions.map(s => ({ ...s, sent: false }))) %>,
+        friends: <%- JSON.stringify(friends) %>,
+        toastMessage: '',
+
+        acceptRequest(id) {
+          this.requests = this.requests.filter(r => r.id !== id);
+          this.showToast('Friend request accepted');
+        },
+
+        declineRequest(id) {
+          this.requests = this.requests.filter(r => r.id !== id);
+          this.showToast('Friend request declined');
+        },
+
+        sendRequest(id) {
+          const suggestion = this.suggestions.find(s => s.id === id);
+          if (suggestion) {
+            suggestion.sent = true;
+            fetch('/send-friend-request', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ receiverId: id })
+            });
+            this.showToast('Friend request sent');
+          }
+        },
+
+        showToast(message) {
+          this.toastMessage = message;
+          setTimeout(() => this.toastMessage = '', 3000);
+        }
+      }
+    }
+  </script>
+
 </body>
 </html>
