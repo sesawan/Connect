@@ -1,36 +1,136 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
   <title>Friends</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </head>
-<body>
-  <h1>Friends of <%= username %></h1>
+<body class="bg-gray-100 text-gray-800" x-data="friendsApp()" @toast.window="showToast($event.detail.message)">
+  <div class="max-w-5xl mx-auto p-6">
+    <!-- Toast Notification -->
+    <div x-show="toastMessage"
+         x-transition
+         class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded shadow"
+         x-text="toastMessage"
+         x-init="setTimeout(() => toastMessage = '', 3000)">
+    </div>
 
-  <h2>Friend Requests</h2>
-  <ul>
-    <% requests.forEach(request => { %>
-      <li><%= request.name %> (<%= request.email %>)</li>
-    <% }) %>
-  </ul>
+    <!-- Page Header -->
+    <h1 class="text-3xl font-bold mb-8">Friends of <%= username %></h1>
 
-  <h2>Friends</h2>
-  <ul>
-    <% friends.forEach(friend => { %>
-      <li><%= friend.name %> (<%= friend.email %>)</li>
-    <% }) %>
-  </ul>
+    <!-- Friend Requests -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold mb-4">Friend Requests</h2>
+      <template x-if="requests.length === 0">
+        <p class="text-gray-500 italic">You're all caught up—no friend requests.</p>
+      </template>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <template x-for="req in requests" :key="req.id">
+          <div class="bg-white p-4 rounded shadow flex justify-between items-center">
+            <div>
+              <p class="font-semibold" x-text="req.name"></p>
+              <p class="text-sm text-gray-600" x-text="req.email"></p>
+            </div>
+            <div class="space-x-2">
+              <button @click="acceptRequest(req.id)"
+                      class="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600">
+                Accept
+              </button>
+              <button @click="declineRequest(req.id)"
+                      class="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600">
+                Decline
+              </button>
+            </div>
+          </div>
+        </template>
+      </div>
+    </section>
 
-  <h2>Friend Suggestions</h2>
-  <ul>
-    <% suggestions.forEach(suggestion => { %>
-      <li>
-        <span><%= suggestion.name %> (<%= suggestion.email %>) - <%= suggestion.mutual_friends %> mutual friends</span>
-        <form action="/send-friend-request" method="POST" style="display: inline;">
-          <input type="hidden" name="receiverId" value="<%= suggestion.id %>">
-          <button type="submit" class="button">Send Request</button>
-        </form>
-      </li>
-    <% }) %>
-  </ul>
+    <!-- Friends List -->
+    <section class="mb-12">
+      <h2 class="text-2xl font-semibold mb-4">Your Friends</h2>
+      <% if (friends.length === 0) { %>
+        <p class="text-gray-500 italic">No friends yet. Start connecting!</p>
+      <% } else { %>
+        <ul class="grid gap-4 sm:grid-cols-2">
+          <% friends.forEach(friend => { %>
+            <li class="bg-white p-4 rounded shadow">
+              <p class="font-semibold"><%= friend.name %></p>
+              <p class="text-sm text-gray-600"><%= friend.email %></p>
+            </li>
+          <% }) %>
+        </ul>
+      <% } %>
+    </section>
+
+    <!-- Friend Suggestions -->
+    <section>
+      <h2 class="text-2xl font-semibold mb-4">Friend Suggestions</h2>
+      <template x-if="suggestions.length === 0">
+        <p class="text-gray-500 italic">No suggestions right now—check back later.</p>
+      </template>
+      <div class="grid gap-4 sm:grid-cols-2">
+        <template x-for="s in suggestions" :key="s.id">
+          <div class="bg-white p-4 rounded shadow flex justify-between items-center">
+            <div>
+              <p class="font-semibold" x-text="s.name"></p>
+              <p class="text-sm text-gray-600" x-text="s.email"></p>
+              <p class="text-sm text-blue-500" x-text="s.mutual_friends + ' mutual friends'"></p>
+            </div>
+            <form @submit.prevent="sendRequest(s.id)">
+              <button type="submit"
+                      class="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                      :disabled="s.sent">
+                <span x-show="!s.sent">Send Request</span>
+                <span x-show="s.sent" class="italic">Sent</span>
+              </button>
+            </form>
+          </div>
+        </template>
+      </div>
+    </section>
+  </div>
+
+  <!-- Alpine Component -->
+  <script>
+    function friendsApp() {
+      return {
+        requests: <%- JSON.stringify(requests) %>,
+        suggestions: <%- JSON.stringify(suggestions.map(s => ({ ...s, sent: false }))) %>,
+        toastMessage: '',
+
+        acceptRequest(id) {
+          this.requests = this.requests.filter(r => r.id !== id);
+          this.showToast('Friend request accepted');
+          // Fetch POST call goes here if needed
+        },
+
+        declineRequest(id) {
+          this.requests = this.requests.filter(r => r.id !== id);
+          this.showToast('Friend request declined');
+        },
+
+        sendRequest(id) {
+          const suggestion = this.suggestions.find(s => s.id === id);
+          if (suggestion) {
+            suggestion.sent = true;
+            fetch('/send-friend-request', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ receiverId: id })
+            });
+            this.showToast('Friend request sent');
+          }
+        },
+
+        showToast(message) {
+          this.toastMessage = message;
+          setTimeout(() => this.toastMessage = '', 3000);
+        }
+      }
+    }
+  </script>
 </body>
 </html>
