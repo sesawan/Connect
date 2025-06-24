@@ -57,7 +57,7 @@ app.use('/uploads', express.static('/home/shaykhul/Downloads/Connect/uploads/'))
 const server = http.createServer(app);
 const io = socketIo(server);
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 // Database setup
 const db = new sqlite3.Database('./database.db');
@@ -1086,13 +1086,13 @@ app.post('/decline-friend-request', isAuthenticated, [
   });
 });
 
-/// Remove friend
+// POST /remove-friend
 app.post('/remove-friend', isAuthenticated, [
   body('friendId').isInt().withMessage('Invalid friend ID')
 ], (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).render('error', { message: 'Invalid friend ID', errors: errors.array() });
+    return res.status(400).json({ success: false, errors: errors.array(), message: 'Invalid friend ID' });
   }
 
   const { friendId } = req.body;
@@ -1101,36 +1101,52 @@ app.post('/remove-friend', isAuthenticated, [
   db.serialize(() => {
     db.run('BEGIN TRANSACTION');
 
-    db.get('SELECT * FROM friends WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)', [userId, friendId, friendId, userId], (err, friendship) => {
+    const checkFriendshipQuery = `
+      SELECT * FROM friends 
+      WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)
+    `;
+
+    db.get(checkFriendshipQuery, [userId, friendId, friendId, userId], (err, friendship) => {
       if (err) {
         db.run('ROLLBACK');
-        return res.status(500).render('error', { message: 'Error retrieving friendship' });
+        return res.status(500).json({ success: false, message: 'Database error checking friendship' });
       }
+
       if (!friendship) {
         db.run('ROLLBACK');
-        return res.status(400).render('error', { message: 'Friendship not found' });
+        return res.status(400).json({ success: false, message: 'Friendship does not exist' });
       }
 
-      db.run('DELETE FROM friends WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)', [userId, friendId, friendId, userId], (err) => {
+      const deleteFriendQuery = `
+        DELETE FROM friends 
+        WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)
+      `;
+
+      db.run(deleteFriendQuery, [userId, friendId, friendId, userId], (err) => {
         if (err) {
           db.run('ROLLBACK');
-          return res.status(500).render('error', { message: 'Failed to remove friend' });
+          return res.status(500).json({ success: false, message: 'Failed to remove friend' });
         }
 
-        // Remove any pending friend request from the removed friend
-        db.run('DELETE FROM friend_requests WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)', [userId, friendId, friendId, userId], (err) => {
+        const deletePendingRequestQuery = `
+          DELETE FROM friend_requests 
+          WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)
+        `;
+
+        db.run(deletePendingRequestQuery, [userId, friendId, friendId, userId], (err) => {
           if (err) {
             db.run('ROLLBACK');
-            return res.status(500).render('error', { message: 'Error removing pending friend request' });
+            return res.status(500).json({ success: false, message: 'Failed to remove related friend requests' });
           }
 
           db.run('COMMIT');
-          res.redirect('/dashboard');
+          return res.json({ success: true, message: 'Friend removed successfully' });
         });
       });
     });
   });
 });
+
 
 app.get('/friends', isAuthenticated, async (req, res) => {
   const userId = req.session.userId;
@@ -1687,69 +1703,3 @@ app.use((err, req, res, next) => {
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on http://0.0.0.0:${PORT}`);
 });
-
-// Advanced friend suggestion logic
-const getAdvancedFriendSuggestions = async (userId) => {
-  return new Promise((resolve, reject) => {
-    db.all(`
-      WITH current_friends AS (
-        SELECT friend_id 
-        FROM friends 
-        WHERE user_id = ?
-      ),
-      mutuals AS (
-        SELECT 
-          u.id,
-          u.name,
-          u.email,
-          u.profile_photo,
-          COUNT(DISTINCT f1.friend_id) AS mutual_friends,
-          COUNT(DISTINCT p.id) AS shared_posts,
-          COUNT(DISTINCT l.id) AS shared_likes
-        FROM users u
-        LEFT JOIN friends f1 ON f1.user_id = u.id
-        LEFT JOIN posts p ON p.user_id = u.id
-        LEFT JOIN likes l ON l.user_id = u.id
-        WHERE u.id != ?
-          AND u.id NOT IN (
-            SELECT friend_id 
-            FROM friends 
-            WHERE user_id = ?
-          )
-          AND u.id NOT IN (
-            SELECT receiver_id 
-            FROM friend_requests 
-            WHERE sender_id = ?
-          )
-          AND u.id NOT IN (
-            SELECT sender_id 
-            FROM friend_requests 
-            WHERE receiver_id = ?
-          )
-          AND f1.friend_id IN (
-            SELECT friend_id FROM current_friends
-          )
-        GROUP BY u.id
-      )
-      SELECT 
-        mutuals.id,
-        mutuals.name,
-        mutuals.email,
-        mutuals.profile_photo,
-        mutuals.mutual_friends,
-        mutuals.shared_posts,
-        mutuals.shared_likes,
-        (mutuals.mutual_friends * 2 + mutuals.shared_posts + mutuals.shared_likes) AS score
-      FROM mutuals
-      ORDER BY score DESC
-      LIMIT 10
-    `, [userId, userId, userId, userId, userId], (err, rows) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(rows);
-      }
-    });
-  });
-};
-
